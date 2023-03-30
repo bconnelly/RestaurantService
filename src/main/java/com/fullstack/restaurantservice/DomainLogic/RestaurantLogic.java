@@ -21,6 +21,7 @@ public class RestaurantLogic {
     public CustomerRecord seatCustomer(String firstName, String address, Float cash) throws EntityNotFoundException {
         List<TableRecord> openTables = getOpenTables();
         if(openTables == null || openTables.isEmpty()) throw new EntityNotFoundException("no empty tables");
+        if(restFetcher.customerExists(firstName)) throw new RuntimeException("customer already in restaurant");
         return restFetcher.seatCustomer(firstName, address, cash, openTables.get(0).tableNumber());
     }
 
@@ -36,7 +37,7 @@ public class RestaurantLogic {
         return allTables;
     }
 
-    public OrderRecord submitOrder(String firstName, String dish, Integer tableNumber, Float bill) throws EntityNotFoundException {
+    public OrderRecord submitOrder(String firstName, String dish, Integer tableNumber, Float bill) throws EntityNotFoundException, RuntimeException {
         if(!restFetcher.customerExists(firstName)) throw new EntityNotFoundException("customer not found in restaurant");
         CustomerRecord customer = restFetcher.getCustomerByName(firstName);
         if(customer.cash() < bill) throw new RuntimeException("customer has insufficient funds");
