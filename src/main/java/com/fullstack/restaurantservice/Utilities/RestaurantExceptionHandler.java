@@ -14,7 +14,7 @@ public class RestaurantExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> entityNotFoundHandler(EntityNotFoundException exception){
         log.error(exception.getCause() + ", " + exception.getMessage());
-        if(exception.getMessage() == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("entity not found");
+        if(exception.getMessage().isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("entity not found");
         else return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getCause() + ", " + exception.getMessage());
     }
 
