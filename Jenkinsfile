@@ -70,7 +70,7 @@ pipeline{
         }
         stage('sanity tests'){
             steps{
-                unstash 'restaurant-repo'
+                unstash 'k8s-components'
                 sh '''
                     python tests.py
                     exit_status=$?
