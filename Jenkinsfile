@@ -68,7 +68,7 @@ pipeline{
                     ls -alF
                 '''
                 stash includes: 'Restaurant-k8s-components/restaurant/', name: 'k8s-components'
-                sh 'ls -alF'
+                sh 'ls -alF Restaurant-k8s-components/'
                 stash includes: 'Restaurant-k8s-components/tests.py', name: 'tests'
             }
         }
