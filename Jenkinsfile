@@ -64,11 +64,8 @@ pipeline{
                     kubectl rollout restart deployment restaurant-deployment
 
                     if [ -z "$(kops validate cluster | grep ".k8s.local is ready")" ]; then echo "failed to deploy to rc namespace" && exit 1; fi
-
-                    ls -alF
                 '''
                 stash includes: 'Restaurant-k8s-components/restaurant/', name: 'k8s-components'
-                sh 'ls -alF Restaurant-k8s-components/'
                 stash includes: 'Restaurant-k8s-components/tests.py', name: 'tests'
             }
         }
@@ -77,7 +74,7 @@ pipeline{
                 unstash 'tests'
                 sh '''
                     ls -alF
-                    python tests.py
+                    python Restaurant-k8s-components/tests.py
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
                     then
