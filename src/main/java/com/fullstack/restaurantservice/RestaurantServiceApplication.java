@@ -44,36 +44,35 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
 //  returns the customer that was seated
 //  returns 404 if no empty tables are found
     @PostMapping("/seatCustomer")
-    public ResponseEntity<CustomerRecord> seatCustomer(@RequestParam("firstName") String firstName,
+    public CustomerRecord seatCustomer(@RequestParam("firstName") String firstName,
                                                        @RequestParam("address") String address,
                                                        @RequestParam("cash") Float cash) throws EntityNotFoundException {
         log.debug("seatCustomer requested");
-        return ResponseEntity.status(HttpStatus.OK).body(restaurantLogic.seatCustomer(firstName, address, cash));
+        return restaurantLogic.seatCustomer(firstName, address, cash);
     }
 
 //  get list of unoccupied tables
-//  returns 404
     @GetMapping("/getOpenTables")
-    public ResponseEntity<List<TableRecord>> getOpenTables() throws EntityNotFoundException {
+    public List<TableRecord> getOpenTables() throws EntityNotFoundException {
         log.debug("getOpenTables requested");
-        return ResponseEntity.status(HttpStatus.OK).body(restaurantLogic.getOpenTables());
+        return restaurantLogic.getOpenTables();
     }
 
     //submit a new order
     // returns the order submitted
     // returns 404 if the customer isn't found in the restaurant
     @PostMapping("/submitOrder")
-    public ResponseEntity<OrderRecord> submitOrder(@RequestParam("firstName")String firstName,
+    public OrderRecord submitOrder(@RequestParam("firstName")String firstName,
                                                    @RequestParam("dish")String dish,
                                                    @RequestParam("tableNumber")Integer tableNumber,
                                                    @RequestParam("bill")Float bill) throws EntityNotFoundException {
         log.debug("submitOrder requested");
-        return ResponseEntity.status(HttpStatus.OK).body(restaurantLogic.submitOrder(firstName, dish, tableNumber, bill));
+        return restaurantLogic.submitOrder(firstName, dish, tableNumber, bill);
     }
 
     @PostMapping("/bootCustomer")
-    public ResponseEntity<CustomerRecord> bootCustomer(@RequestParam("firstName") String firstName) throws EntityNotFoundException {
+    public CustomerRecord bootCustomer(@RequestParam("firstName") String firstName) throws EntityNotFoundException {
         log.debug("bootCustomer requested");
-        return ResponseEntity.status(HttpStatus.OK).body(restaurantLogic.bootCustomer(firstName));
+        return restaurantLogic.bootCustomer(firstName);
     }
 }
