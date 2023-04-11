@@ -21,8 +21,6 @@ public class RestaurantExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> exceptionHandler(Exception exception){
         log.error(exception.getCause() + ", " + exception.getMessage());
-//        if(exception.getMessage() == null || exception.getCause() == null || exception.getMessage().isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("unknown exception");
-//        else return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getCause() + ", " + exception.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getCause() + ", " + exception.getMessage());
     }
 }
