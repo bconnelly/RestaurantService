@@ -114,7 +114,7 @@ pipeline{
         }
         stage('sanity tests - prod'){
                     steps{
-                        unstash 'tables-repo'
+                        unstash 'restaurant-repo'
                         sh '''
                             python Restaurant-k8s-components/tests.py
                             exit_status=$?
