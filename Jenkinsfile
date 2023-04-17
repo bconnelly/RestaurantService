@@ -74,7 +74,7 @@ pipeline{
                 unstash 'tests'
                 sh '''
                     ls -alF
-                    python Restaurant-k8s-components/tests.py aa6e89582db584a67b1a036a1ebc5f90-87f4ddbbba971a53.elb.us-east-1.amazonaws.com
+                    python Restaurant-k8s-components/tests.py ${RC_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
                     then
@@ -116,7 +116,7 @@ pipeline{
             steps{
                 unstash 'restaurant-repo'
                 sh '''
-                    python Restaurant-k8s-components/tests.py ade8c967e091640598915c280dd35769-631d031ad4ae1687.elb.us-east-1.amazonaws.com
+                    python Restaurant-k8s-components/tests.py ${PROD_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
                     then
