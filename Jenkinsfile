@@ -6,12 +6,9 @@ pipeline{
                   -v /root/jenkins/restaurant-resources/:/root/jenkins/restaurant-resources/ \
                   -v /var/run/docker.sock:/var/run/docker.sock \
                   --privileged --env KOPS_STATE_STORE=' + env.KOPS_STATE_STORE + \
-                  ' --env DOCKER_USER=' + env.DOCKER_USER
+                  ' --env DOCKER_USER=' + env.DOCKER_USER + ' --env DOCKER_PASS=' + env.DOCKER_PASS
             alwaysPull true
         }
-    }
-    environment{
-        DOCKER_PASS = credentials('DOCKER_PASS')
     }
     stages{
         stage('maven build and test, docker build and push'){
