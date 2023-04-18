@@ -1,15 +1,16 @@
 pipeline{
-    agent{
-        docker{
-            image 'bryan949/fullstack-agent:0.3'
-            args '-v /root/.m2:/root/.m2 \
-                  -v /root/jenkins/restaurant-resources/:/root/jenkins/restaurant-resources/ \
-                  -v /var/run/docker.sock:/var/run/docker.sock \
-                  --privileged --env KOPS_STATE_STORE=${KOPS_STATE_STORE} \
-                  --env DOCKER_USER=${DOCKER_USER} --env DOCKER_PASS=${env.DOCKER_PASS}'
-            alwaysPull true
-        }
-    }
+//     agent{
+//         docker{
+//             image 'bryan949/fullstack-agent:0.3'
+//             args '-v /root/.m2:/root/.m2 \
+//                   -v /root/jenkins/restaurant-resources/:/root/jenkins/restaurant-resources/ \
+//                   -v /var/run/docker.sock:/var/run/docker.sock \
+//                   --privileged --env KOPS_STATE_STORE=${KOPS_STATE_STORE} \
+//                   --env DOCKER_USER=${DOCKER_USER} --env DOCKER_PASS=${DOCKER_PASS}'
+//             alwaysPull true
+//         }
+//     }
+    agent any
     environment{
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
@@ -77,7 +78,6 @@ pipeline{
             steps{
                 unstash 'tests'
                 sh '''
-                    ls -alF
                     python Restaurant-k8s-components/tests.py ${RC_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
@@ -132,9 +132,10 @@ pipeline{
     }
     post{
         failure{
-            unstash 'restaurant-repo'
             withCredentials([gitUsernamePassword(credentialsId: 'GITHUB_USERPASS', gitToolName: 'Default')]) {
+                unstash 'restaurant-repo'
                 sh '''
+                    ls -alF
                     git checkout rc
                     git checkout master
                     git rev-list --left-right master...rc | while read line
