@@ -77,7 +77,9 @@ pipeline{
             steps{
                 unstash 'tests'
                 sh '''
+                    ls -alF
                     cp /root/jenkins/restaurant-resources/tests.sh .
+                    ls-alF
                     tests.sh ${RC_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
