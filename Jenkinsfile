@@ -78,6 +78,7 @@ pipeline{
                 unstash 'tests'
                 sh '''
 //                     python3 Restaurant-k8s-components/tests.py ${RC_LB}
+                    chmod +x /Restaurant-k8s-components/tests.sh
                     ./Restaurant-k8s-components/tests.sh ${RC_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
