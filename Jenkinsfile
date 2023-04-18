@@ -77,7 +77,7 @@ pipeline{
             steps{
                 unstash 'tests'
                 sh '''
-                    cp /home/ubuntu/personal-workspace/k8s-components/Restaurant-k8s-components/tests.sh .
+                    cp /root/jenkins/restaurant-resources/tests.sh .
                     tests.sh ${RC_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
@@ -120,7 +120,7 @@ pipeline{
             steps{
                 unstash 'restaurant-repo'
                 sh '''
-                    cp /home/ubuntu/personal-workspace/k8s-components/Restaurant-k8s-components/tests.sh .
+                    cp /root/jenkins/restaurant-resources/tests.sh .
                     tests.sh {PROD_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
