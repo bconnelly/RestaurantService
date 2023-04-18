@@ -78,7 +78,7 @@ pipeline{
             steps{
                 unstash 'tests'
                 sh '''
-                    python Restaurant-k8s-components/tests.py ${RC_LB}
+                    python3 Restaurant-k8s-components/tests.py ${RC_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
                     then
@@ -120,7 +120,7 @@ pipeline{
             steps{
                 unstash 'restaurant-repo'
                 sh '''
-                    python Restaurant-k8s-components/tests.py ${PROD_LB}
+                    python3 Restaurant-k8s-components/tests.py ${PROD_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
                     then
