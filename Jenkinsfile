@@ -5,7 +5,9 @@ pipeline{
             args '-v /root/.m2:/root/.m2 \
                   -v /root/jenkins/restaurant-resources/:/root/jenkins/restaurant-resources/ \
                   -v /var/run/docker.sock:/var/run/docker.sock \
-                  --privileged --env KOPS_STATE_STORE=${KOPS_STATE_STORE} --env DOCKER_USER=${DOCKER_USER} --env DOCKER_PASS=${env.DOCKER_PASS}'
+                  --privileged --env KOPS_STATE_STORE=${KOPS_STATE_STORE} \
+                  --env DOCKER_USER=${DOCKER_USER} --env DOCKER_PASS=${env.DOCKER_PASS} \
+                  --env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} --env AWS_SECRET_KEY_ID=${AWS_SECRET_KEY_ID}'
             alwaysPull true
         }
     }
@@ -17,7 +19,6 @@ pipeline{
                     mvn verify
                 '''
                 stash name: 'restaurant-repo'
-
             }
         }
         stage('build docker images'){
