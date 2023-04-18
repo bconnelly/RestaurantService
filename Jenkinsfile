@@ -6,16 +6,20 @@ pipeline{
                   -v /root/jenkins/restaurant-resources/:/root/jenkins/restaurant-resources/ \
                   -v /var/run/docker.sock:/var/run/docker.sock \
                   --privileged --env KOPS_STATE_STORE=${KOPS_STATE_STORE} \
-                  --env DOCKER_USER=${DOCKER_USER} --env DOCKER_PASS=${env.DOCKER_PASS} \
-                  --env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} --env AWS_SECRET_KEY_ID=${AWS_SECRET_KEY_ID}'
+                  --env DOCKER_USER=${DOCKER_USER} --env DOCKER_PASS=${env.DOCKER_PASS}'
             alwaysPull true
         }
+    }
+    environment{
+        AWS_SECRET_KEY_ID = ${AWS_SECRET_KEY_ID}
+        AWS_ACCESS_KEY_ID = ${AWS_ACCESS_KEY_ID}
     }
     stages{
         stage('maven build and test, docker build and push'){
             steps{
                 echo 'packaging and testing:'
                 sh '''
+                \n\nenv\n\n
                     mvn verify
                 '''
                 stash name: 'restaurant-repo'
