@@ -77,9 +77,8 @@ pipeline{
             steps{
                 unstash 'tests'
                 sh '''
-//                     python3 Restaurant-k8s-components/tests.py ${RC_LB}
-                    chmod +x /Restaurant-k8s-components/tests.sh
-                    ./Restaurant-k8s-components/tests.sh ${RC_LB}
+                    cp /home/ubuntu/personal-workspace/k8s-components/Restaurant-k8s-components/tests.sh .
+                    tests.sh ${RC_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
                     then
@@ -121,8 +120,8 @@ pipeline{
             steps{
                 unstash 'restaurant-repo'
                 sh '''
-//                     python3 Restaurant-k8s-components/tests.py ${PROD_LB}
-                    ./Restaurant-k8s-components/tests.sh #{PROD_LB}
+                    cp /home/ubuntu/personal-workspace/k8s-components/Restaurant-k8s-components/tests.sh .
+                    tests.sh {PROD_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
                     then
