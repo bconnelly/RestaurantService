@@ -70,16 +70,13 @@ pipeline{
                     if [ -z "$(kops validate cluster | grep ".k8s.local is ready")" ]; then echo "failed to deploy to rc namespace" && exit 1; fi
                 '''
                 stash includes: 'Restaurant-k8s-components/restaurant/', name: 'k8s-components'
-                stash includes: 'Restaurant-k8s-components/tests.py', name: 'tests'
+                stash includes: 'Restaurant-k8s-components/tests.py, Restaurant-k8s-components/tests.sh', name: 'tests'
             }
         }
         stage('sanity tests'){
             steps{
                 unstash 'tests'
                 sh '''
-                    cp /root/jenkins/restaurant-resources/tests.sh .
-                    ls -alF
-                    pwd
                     ./tests.sh ${RC_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
@@ -123,7 +120,7 @@ pipeline{
                 unstash 'restaurant-repo'
                 sh '''
                     cp /root/jenkins/restaurant-resources/tests.sh .
-                    ./tests.sh {PROD_LB}
+                    ./tests.sh ${PROD_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
                     then
@@ -138,7 +135,6 @@ pipeline{
             withCredentials([gitUsernamePassword(credentialsId: 'GITHUB_USERPASS', gitToolName: 'Default')]) {
                 unstash 'restaurant-repo'
                 sh '''
-                    ls -alF
                     git checkout rc
                     git checkout master
                     git rev-list --left-right master...rc | while read line
