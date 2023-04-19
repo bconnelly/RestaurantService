@@ -19,7 +19,6 @@ pipeline{
             steps{
                 echo 'packaging and testing:'
                 sh '''
-                \n\nenv\n\n
                     mvn verify
                 '''
                 stash name: 'restaurant-repo'
@@ -135,6 +134,9 @@ pipeline{
             withCredentials([gitUsernamePassword(credentialsId: 'GITHUB_USERPASS', gitToolName: 'Default')]) {
                 unstash 'restaurant-repo'
                 sh '''
+                    ls -alF
+                    cd RestaurantService/
+                    ls -alF
                     git checkout rc
                     git checkout master
                     git rev-list --left-right master...rc | while read line
@@ -145,6 +147,11 @@ pipeline{
                     git merge rc
                     git push origin master
                 '''
+            }
+        }
+        success{
+            {
+                echo "success"
             }
         }
         always{
