@@ -150,7 +150,7 @@ pipeline{
             }
         }
         success{
-            {
+            withCredentials([gitUsernamePassword(credentialsId: 'GITHUB_USERPASS', gitToolName: 'Default')]){
                 echo "success"
             }
         }
