@@ -77,11 +77,10 @@ pipeline{
             steps{
                 unstash 'tests'
                 sh '''
-                    ls -alF
                     cp /root/jenkins/restaurant-resources/tests.sh .
                     ls -alF
                     pwd
-                    tests.sh ${RC_LB}
+                    ./tests.sh ${RC_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
                     then
@@ -124,7 +123,7 @@ pipeline{
                 unstash 'restaurant-repo'
                 sh '''
                     cp /root/jenkins/restaurant-resources/tests.sh .
-                    tests.sh {PROD_LB}
+                    ./tests.sh {PROD_LB}
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
                     then
