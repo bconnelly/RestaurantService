@@ -19,9 +19,17 @@ pipeline{
             steps{
                 echo 'packaging and testing:'
                 sh '''
+                    ls -alF
                     mvn verify
                 '''
                 stash name: 'restaurant-repo'
+                withCredentials([gitUsernamePassword(credentialsId: 'GITHUB_USERPASS', gitToolName: 'Default')]){
+                    sh '''
+                        git clone https://www.github.com/bconnelly/RestaurantService.git
+                        git branch
+                    '''
+                }
+
             }
         }
         stage('build docker images'){
