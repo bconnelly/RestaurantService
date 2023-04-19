@@ -17,7 +17,6 @@ pipeline{
     stages{
         stage('maven build and test, docker build and push'){
             steps{
-                echo 'packaging and testing:'
                 sh '''
                     mvn verify
                 '''
@@ -117,7 +116,7 @@ pipeline{
         }
         stage('sanity tests - prod'){
             steps{
-                unstash 'restaurant-repo'
+                unstash 'tests'
                 sh '''
                     ./Restaurant-k8s-components/tests.sh ${PROD_LB}
                     exit_status=$?
@@ -145,11 +144,6 @@ pipeline{
                     git merge rc
                     git push origin master
                 '''
-            }
-        }
-        success{
-            withCredentials([gitUsernamePassword(credentialsId: 'GITHUB_USERPASS', gitToolName: 'Default')]){
-                echo "success"
             }
         }
         always{
