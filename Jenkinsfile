@@ -135,8 +135,6 @@ pipeline{
                 unstash 'restaurant-repo'
                 sh '''
                     ls -alF
-                    cd RestaurantService/
-                    ls -alF
                     git checkout rc
                     git checkout master
                     git rev-list --left-right master...rc | while read line
