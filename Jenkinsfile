@@ -22,7 +22,6 @@ pipeline{
                     mvn verify
                 '''
                 stash name: 'restaurant-repo', useDefaultExcludes: false
-                }
 
             }
         }
