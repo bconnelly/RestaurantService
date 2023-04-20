@@ -20,7 +20,7 @@ public class RestaurantLogic {
 
     public CustomerRecord seatCustomer(String firstName, String address, Float cash) throws EntityNotFoundException {
         List<TableRecord> openTables = getOpenTables();
-        if(openTables == null || openTables.isEmpty()) throw new EntityNotFoundException("no empty tables");
+        if(openTables.isEmpty()) throw new EntityNotFoundException("no empty tables");
         if(restFetcher.customerExists(firstName)) throw new RuntimeException("customer already in restaurant");
         return restFetcher.seatCustomer(firstName, address, cash, openTables.get(0).tableNumber());
     }
