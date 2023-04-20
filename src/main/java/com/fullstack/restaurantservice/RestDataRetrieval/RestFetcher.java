@@ -48,6 +48,7 @@ public class RestFetcher {
 
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customerGetAllUrl).toUriString();
 
+        log.debug("calling customers /getAllCustomers");
         CustomerRecord[] customerRecords = template.getForObject(urlTemplate, CustomerRecord[].class);
         if(customerRecords != null) return new ArrayList<>(Arrays.asList(customerRecords));
         else throw new EntityNotFoundException("customer records could not be retrieved");
@@ -59,6 +60,7 @@ public class RestFetcher {
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customerGetByNameUrl)
                 .queryParam("firstName", firstName).toUriString();
 
+        log.debug("calling customers /getCustomerByFirstName");
         CustomerRecord customerRecord = template.getForObject(urlTemplate, CustomerRecord.class);
         if(customerRecord != null) return customerRecord;
         else throw new EntityNotFoundException("customer not found");
@@ -68,6 +70,8 @@ public class RestFetcher {
         if(customersHost == null || customerExistsUrl == null)  throw new RuntimeException("failed to load environment");
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customerExistsUrl)
                 .queryParam("firstName", firstName).toUriString();
+
+        log.debug("calling customers /customerExists");
         return template.getForObject(urlTemplate, Boolean.class);
     }
 
@@ -82,34 +86,9 @@ public class RestFetcher {
                 .queryParam("cash", cash)
                 .queryParam("tableNumber", tableNumber).toUriString();
 
+        log.debug("calling customers /insertCustomer");
         HttpEntity<String> request = new HttpEntity<>(headers);
         return template.postForObject(urlTemplate, request, CustomerRecord.class);
-    }
-
-    public OrderRecord submitOrder(String firstName, String dish, Integer tableNumber, Float bill){
-        if(ordersHost == null || orderSubmitUrl == null) throw new RuntimeException("failed to load environment");
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> request = new HttpEntity<>(headers);
-
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl(ordersHost + orderSubmitUrl)
-                .queryParam("firstName", firstName)
-                .queryParam("dish", dish)
-                .queryParam("tableNumber", tableNumber)
-                .queryParam("bill", bill).toUriString();
-
-        return template.postForObject(urlTemplate, request, OrderRecord.class);
-    }
-
-    public List<TableRecord> getAllTables() throws EntityNotFoundException{
-        if(tablesHost == null || tableGetAllUrl == null) throw new RuntimeException("failed to load environment");
-
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl(tablesHost + tableGetAllUrl).toUriString();
-
-        TableRecord[] tableRecordList = template.getForObject(urlTemplate, TableRecord[].class);
-
-        if(tableRecordList != null) return new ArrayList<>(Arrays.asList(tableRecordList));
-        else throw new EntityNotFoundException("no tables found");
     }
 
     public CustomerRecord bootCustomer(String misbehavingCustomer) {
@@ -126,7 +105,35 @@ public class RestFetcher {
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customersBootUrl)
                 .queryParam("firstName", misbehavingCustomer).toUriString();
 
+        log.debug("calling customers /bootCustomer");
         return template.postForObject(urlTemplate, request, CustomerRecord.class);
+    }
 
+    public OrderRecord submitOrder(String firstName, String dish, Integer tableNumber, Float bill){
+        if(ordersHost == null || orderSubmitUrl == null) throw new RuntimeException("failed to load environment");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(headers);
+
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl(ordersHost + orderSubmitUrl)
+                .queryParam("firstName", firstName)
+                .queryParam("dish", dish)
+                .queryParam("tableNumber", tableNumber)
+                .queryParam("bill", bill).toUriString();
+
+        log.debug("calling orders /insertOrder");
+        return template.postForObject(urlTemplate, request, OrderRecord.class);
+    }
+
+    public List<TableRecord> getAllTables() throws EntityNotFoundException{
+        if(tablesHost == null || tableGetAllUrl == null) throw new RuntimeException("failed to load environment");
+
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl(tablesHost + tableGetAllUrl).toUriString();
+
+        log.debug("calling tables /getAllTables");
+        TableRecord[] tableRecordList = template.getForObject(urlTemplate, TableRecord[].class);
+
+        if(tableRecordList != null) return new ArrayList<>(Arrays.asList(tableRecordList));
+        else throw new EntityNotFoundException("no tables found");
     }
 }
