@@ -21,37 +21,28 @@ pipeline{
                     LOAD_BALANCER=aa6e89582db584a67b1a036a1ebc5f90-87f4ddbbba971a53.elb.us-east-1.amazonaws.com
                     CUSTOMER_NAME=$(tr -cd "[:digit:]" < /dev/urandom | head -c 6)
 
-                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/seatCustomer?firstName=$CUSTOMER_NAME&address=mainst&cash=1.23")
+                    curl -X POST -s -iv "http://$LOAD_BALANCER/RestaurantService/seatCustomer?firstName=$CUSTOMER_NAME&address=mainst&cash=1.23"
                     echo "should return 200"
-                    echo $response
-
-                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/seatCustomer?firstName=$CUSTOMER_NAME&address=mainst")
+                    
+                    curl -X POST -s -iv "http://$LOAD_BALANCER/RestaurantService/seatCustomer?firstName=$CUSTOMER_NAME&address=mainst"
                     echo "should return 400"
-                    echo $response
-
-                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/seatCustomer?firstName=$CUSTOMER_NAME&address=mainst&cash=bad-value")
+                    
+                    curl -X POST -s -iv "http://$LOAD_BALANCER/RestaurantService/seatCustomer?firstName=$CUSTOMER_NAME&address=mainst&cash=bad-value"
                     echo "should return 400"
-                    echo $response
-
-                    response=$(curl -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/getOpenTables")
+                    
+                    curl -s -iv "http://$LOAD_BALANCER/RestaurantService/getOpenTables"
                     echo "should return 200"
-                    echo $response
-
-                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg&bill=1.00")
+                    
+                    curl -X POST -s -iv "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg&bill=1.00"
                     echo "should return 200"
-                    echo $response
-
-                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg&bill=100.00")
+                    
+                    curl -X POST -s -iv "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg&bill=100.00"
                     echo "should return 500"
-                    echo $response
-
-                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg")
+                    
+                    curl -X POST -s -iv "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg"
+                    
+                    curl -X POST -s -iv "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg&bill=bad-param"
                     echo "should return 400"
-                    echo $response
-
-                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg&bill=bad-param")
-                    echo "should return 400"
-                    echo $response
 
                     exit 1
                 '''
