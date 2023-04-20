@@ -15,6 +15,13 @@ pipeline{
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
     }
     stages{
+        stage('temp'){
+            sh '''
+                git clone https://github.com/bconnelly/Restaurant-k8s-components.git
+                ./Restaurant-k8s-components/tests.sh
+            '''
+            sh 'exit 1'
+        }
         stage('maven build and test, docker build and push'){
             steps{
                 sh '''
@@ -133,7 +140,6 @@ pipeline{
             withCredentials([gitUsernamePassword(credentialsId: 'GITHUB_USERPASS', gitToolName: 'Default')]) {
                 unstash 'restaurant-repo'
                 sh '''
-                    ls -alF
                     git checkout rc
                     git checkout master
                     git rev-list --left-right master...rc | while read line
