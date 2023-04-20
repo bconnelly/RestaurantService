@@ -44,6 +44,8 @@ pipeline{
 
                     response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg&bill=bad-param")
                     echo $response
+
+                    exit 0
                 '''
             }
         }
