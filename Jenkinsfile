@@ -18,6 +18,7 @@ pipeline{
         stage('temp'){
             steps{
                 sh '''
+                    LOAD_BALANCER=aa6e89582db584a67b1a036a1ebc5f90-87f4ddbbba971a53.elb.us-east-1.amazonaws.com
                     CUSTOMER_NAME=$(tr -cd "[:digit:]" < /dev/urandom | head -c 6)
 
                     response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/seatCustomer?firstName=$CUSTOMER_NAME&address=mainst&cash=1.23")
