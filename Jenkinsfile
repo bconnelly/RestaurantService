@@ -16,11 +16,13 @@ pipeline{
     }
     stages{
         stage('temp'){
-            sh '''
-                git clone https://github.com/bconnelly/Restaurant-k8s-components.git
-                ./Restaurant-k8s-components/tests.sh
-            '''
-            sh 'exit 1'
+            steps{
+                sh '''
+                    git clone https://github.com/bconnelly/Restaurant-k8s-components.git
+                    ./Restaurant-k8s-components/tests.sh
+                '''
+                sh 'exit 1'
+            }
         }
         stage('maven build and test, docker build and push'){
             steps{
