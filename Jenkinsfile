@@ -18,10 +18,32 @@ pipeline{
         stage('temp'){
             steps{
                 sh '''
-                    git clone https://github.com/bconnelly/Restaurant-k8s-components.git
-                    ./Restaurant-k8s-components/tests.sh
+                    CUSTOMER_NAME=$(tr -cd "[:digit:]" < /dev/urandom | head -c 6)
+
+                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/seatCustomer?firstName=$CUSTOMER_NAME&address=mainst&cash=1.23")
+                    echo $response
+
+                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/seatCustomer?firstName=$CUSTOMER_NAME&address=mainst")
+                    echo $response
+
+                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/seatCustomer?firstName=$CUSTOMER_NAME&address=mainst&cash=bad-value")
+                    echo $response
+
+                    response=$(curl -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/getOpenTables")
+                    echo $response
+
+                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg&bill=1.00")
+                    echo $response
+
+                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg&bill=100.00")
+                    echo $response
+
+                    response=$(curl -X POST -s -w -iv --raw "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg")
+                    echo $response
+
+                    response=$(curl -X POST -s -w "%{http_code}" --output /dev/null "http://$LOAD_BALANCER/RestaurantService/submitOrder?firstName=$CUSTOMER_NAME&tableNumber=5&dish=burg&bill=bad-param")
+                    echo $response
                 '''
-                sh 'exit 1'
             }
         }
         stage('maven build and test, docker build and push'){
@@ -92,6 +114,7 @@ pipeline{
                         echo "exit ${exit_status}"
                     fi
                 '''
+
 
                 withCredentials([gitUsernamePassword(credentialsId: 'GITHUB_USERPASS', gitToolName: 'Default')]) {
                     sh '''
@@ -165,7 +188,7 @@ pipeline{
                     disableDeferredWipeout: true)
 
             sh '''
-                docker rmi bryan949/fullstack-restaurant
+                docker rmi bryan949/fullstack-restaurant:0.3
                 docker image prune
             '''
         }
