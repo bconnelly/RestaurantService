@@ -19,7 +19,7 @@ pipeline{
             steps{
                 sh '''
                     git clone https://github.com/bconnelly/Restaurant-k8s-components.git
-                    ./Restaurant-k8s-components/tests.sh {RC_LB}
+                    ./Restaurant-k8s-components/tests.sh {$RC_LB}
                     echo "outside test script"
                     exit 1
                 '''

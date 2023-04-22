@@ -1,29 +1,37 @@
 package com.fullstack.restaurantservice;
 
+import com.fullstack.restaurantservice.DataEntities.CustomerRecord;
 import com.fullstack.restaurantservice.Utilities.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 class RestaurantServiceApplicationTest {
 
-    @Autowired
-    RestaurantServiceApplication app;
+    RestaurantServiceApplication restaurantApi = new RestaurantServiceApplication();
+
     @Test
-    void passThrough() {
+    void defaultLandingPage() {
+        assert (restaurantApi.defaultLandingPage().getBody() != null);
+        assert (Objects.equals(restaurantApi.defaultLandingPage().getBody(), "default landing page"));
     }
 
     @Test
-    void getOrdersForCustomer() {
+    void seatCustomer() throws EntityNotFoundException {
+//        assertThrows(EntityNotFoundException.class, () -> restaurantApi.seatCustomer("unit-test", "unit-test", null));
     }
 
     @Test
-    void getCustomersByDish() {
+    void getOpenTables() {
     }
 
     @Test
-    void submitOrder() throws EntityNotFoundException {
-//        app.submitOrder("name", "food", 1, 1.00f);
+    void submitOrder() {
+    }
+
+    @Test
+    void bootCustomer() {
     }
 }

@@ -19,6 +19,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
 @SpringBootApplication(scanBasePackages = "com.fullstack.restaurantservice")
 public class RestaurantServiceApplication extends SpringBootServletInitializer {
 
@@ -34,6 +35,7 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     @Autowired
     RestaurantLogic restaurantLogic;
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/")
     public ResponseEntity<String> defaultLandingPage(){
         log.debug("default landing page requested");
@@ -43,6 +45,7 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
 //  seat a new customer at their own table
 //  returns the customer that was seated
 //  returns 404 if no empty tables are found
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/seatCustomer")
     public CustomerRecord seatCustomer(@RequestParam("firstName") String firstName,
                                                        @RequestParam("address") String address,
@@ -52,6 +55,7 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     }
 
 //  get list of unoccupied tables
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/getOpenTables")
     public List<TableRecord> getOpenTables() throws EntityNotFoundException {
         log.debug("getOpenTables requested");
@@ -61,6 +65,7 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     //submit a new order
     // returns the order submitted
     // returns 404 if the customer isn't found in the restaurant
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/submitOrder")
     public OrderRecord submitOrder(@RequestParam("firstName")String firstName,
                                                    @RequestParam("dish")String dish,
@@ -70,6 +75,7 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
         return restaurantLogic.submitOrder(firstName, dish, tableNumber, bill);
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/bootCustomer")
     public CustomerRecord bootCustomer(@RequestParam("firstName") String firstName) throws EntityNotFoundException {
         log.debug("bootCustomer requested");
