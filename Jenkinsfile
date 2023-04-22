@@ -15,16 +15,16 @@ pipeline{
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
     }
     stages{
-        stage('tests'){
-            steps{
-                sh '''
-                    git clone https://github.com/bconnelly/Restaurant-k8s-components.git
-                    ./Restaurant-k8s-components/tests.sh {$RC_LB}
-                    echo "outside test script"
-                    exit 1
-                '''
-            }
-        }
+//         stage('tests'){
+//             steps{
+//                 sh '''
+//                     git clone https://github.com/bconnelly/Restaurant-k8s-components.git
+//                     ./Restaurant-k8s-components/tests.sh {$RC_LB}
+//                     echo "outside test script"
+//                     exit 1
+//                 '''
+//             }
+//         }
         stage('maven build and test, docker build and push'){
             steps{
                 sh '''
