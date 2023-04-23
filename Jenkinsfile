@@ -15,16 +15,6 @@ pipeline{
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
     }
     stages{
-//         stage('tests'){
-//             steps{
-//                 sh '''
-//                     git clone https://github.com/bconnelly/Restaurant-k8s-components.git
-//                     ./Restaurant-k8s-components/tests.sh {$RC_LB}
-//                     echo "outside test script"
-//                     exit 1
-//                 '''
-//             }
-//         }
         stage('maven build and test, docker build and push'){
             steps{
                 sh '''
@@ -169,7 +159,7 @@ pipeline{
                     disableDeferredWipeout: true)
 
             sh '''
-                docker rmi bryan949/fullstack-restaurant:0.3
+                docker rmi bryan949/fullstack-restaurant
                 docker image prune
             '''
         }
