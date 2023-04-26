@@ -33,8 +33,8 @@ pipeline{
                     cp /root/jenkins/restaurant-resources/context.xml .
                     cp /root/jenkins/restaurant-resources/server.xml .
 
-                    docker build -t bryan949/fullstack-restaurant .
-                    docker push bryan949/fullstack-restaurant:latest
+                    docker build -t bryan949/poc-restaurant .
+                    docker push bryan949/poc-restaurant:latest
 
                     rm tomcat-users.xml
                     rm context.xml
@@ -159,7 +159,7 @@ pipeline{
                     disableDeferredWipeout: true)
 
             sh '''
-                docker rmi bryan949/fullstack-restaurant
+                docker rmi bryan949/poc-restaurant
                 docker image prune
             '''
         }
