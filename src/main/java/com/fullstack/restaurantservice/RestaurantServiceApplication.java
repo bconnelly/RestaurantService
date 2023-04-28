@@ -42,9 +42,6 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
         return ResponseEntity.status(HttpStatus.OK).body("default landing page");
     }
 
-//  seat a new customer at their own table
-//  returns the customer that was seated
-//  returns 404 if no empty tables are found
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/seatCustomer")
     public CustomerRecord seatCustomer(@RequestParam("firstName") String firstName,
@@ -54,7 +51,6 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
         return restaurantLogic.seatCustomer(firstName, address, cash);
     }
 
-//  get list of unoccupied tables
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/getOpenTables")
     public List<TableRecord> getOpenTables() throws EntityNotFoundException {
@@ -62,9 +58,6 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
         return restaurantLogic.getOpenTables();
     }
 
-    //submit a new order
-    // returns the order submitted
-    // returns 404 if the customer isn't found in the restaurant
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/submitOrder")
     public OrderRecord submitOrder(@RequestParam("firstName")String firstName,
