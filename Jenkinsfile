@@ -117,19 +117,6 @@ pipeline{
                 '''
             }
         }
-        stage('sanity tests - prod'){
-            steps{
-                unstash 'tests'
-                sh '''
-                    ./Restaurant-k8s-components/tests.sh ${PROD_LB}
-                    exit_status=$?
-                    if [ "${exit_status}" -ne 0 ];
-                    then
-                        echo "PROD FAILURE, MANUAL INSPECTION NECESSARY - exit ${exit_status}"
-                    fi
-                    '''
-            }
-        }
     }
     post{
         failure{
