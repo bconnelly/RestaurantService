@@ -44,11 +44,12 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/seatCustomer")
-    public CustomerRecord seatCustomer(@RequestParam("firstName") String firstName,
+    public String seatCustomer(@RequestParam("firstName") String firstName,
                                                        @RequestParam("address") String address,
                                                        @RequestParam("cash") Float cash) throws EntityNotFoundException {
         log.debug("seatCustomer requested");
-        return restaurantLogic.seatCustomer(firstName, address, cash);
+//        return restaurantLogic.seatCustomer(firstName, address, cash);
+        return "customer was probably seated";
     }
 
     @ResponseStatus(HttpStatus.OK)
