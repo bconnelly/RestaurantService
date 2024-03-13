@@ -13,14 +13,19 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
+import static java.util.concurrent.CompletableFuture.allOf;
 
 @Slf4j
+@EnableAsync
 @RestController
-@ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
-@SpringBootApplication(scanBasePackages = "com.fullstack.restaurantservice")
+@SpringBootApplication
 public class RestaurantServiceApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
@@ -35,43 +40,37 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     @Autowired
     RestaurantLogic restaurantLogic;
 
-    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/")
-    public ResponseEntity<String> defaultLandingPage(){
+    public String defaultLandingPage(){
         log.debug("default landing page requested");
-        return ResponseEntity.status(HttpStatus.OK).body("default landing page");
+        return "default landing page";
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/seatCustomer")
-    public CustomerRecord seatCustomer(@RequestParam("firstName") String firstName,
+    public CompletableFuture<CustomerRecord> seatCustomer(@RequestParam("firstName") String firstName,
                                                        @RequestParam("address") String address,
-                                                       @RequestParam("cash") Float cash) throws EntityNotFoundException {
+                                                       @RequestParam("cash") Float cash) throws EntityNotFoundException, ExecutionException, InterruptedException {
         log.debug("seatCustomer requested");
         return restaurantLogic.seatCustomer(firstName, address, cash);
-//        return "customer was probably seated!";
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/getOpenTables")
-    public List<TableRecord> getOpenTables() throws EntityNotFoundException {
+    public CompletableFuture<List<TableRecord>> getOpenTables() throws EntityNotFoundException, ExecutionException, InterruptedException {
         log.debug("getOpenTables requested");
         return restaurantLogic.getOpenTables();
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/submitOrder")
-    public OrderRecord submitOrder(@RequestParam("firstName")String firstName,
+    public CompletableFuture<OrderRecord> submitOrder(@RequestParam("firstName")String firstName,
                                                    @RequestParam("dish")String dish,
                                                    @RequestParam("tableNumber")Integer tableNumber,
-                                                   @RequestParam("bill")Float bill) throws EntityNotFoundException {
+                                                   @RequestParam("bill")Float bill) throws EntityNotFoundException, ExecutionException, InterruptedException {
         log.debug("submitOrder requested");
         return restaurantLogic.submitOrder(firstName, dish, tableNumber, bill);
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/bootCustomer")
-    public CustomerRecord bootCustomer(@RequestParam("firstName") String firstName) throws EntityNotFoundException {
+    public CompletableFuture<CustomerRecord> bootCustomer(@RequestParam("firstName") String firstName) throws EntityNotFoundException, ExecutionException, InterruptedException {
         log.debug("bootCustomer requested");
         return restaurantLogic.bootCustomer(firstName);
     }

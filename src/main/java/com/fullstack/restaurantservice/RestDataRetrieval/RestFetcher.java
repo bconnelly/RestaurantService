@@ -6,6 +6,7 @@ import com.fullstack.restaurantservice.DataEntities.TableRecord;
 import com.fullstack.restaurantservice.Utilities.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
@@ -14,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
@@ -43,18 +45,20 @@ public class RestFetcher {
     @Value("${tables.get-all.endpoint}")
     private String tableGetAllUrl;
 
-    public List<CustomerRecord> getAllCustomers() throws EntityNotFoundException {
+    @Async
+    public CompletableFuture<List<CustomerRecord>> getAllCustomers() throws EntityNotFoundException {
         if(customersHost == null || customerGetAllUrl == null) throw new RuntimeException("failed to load environment");
 
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customerGetAllUrl).toUriString();
 
         log.debug("calling customers /getAllCustomers");
         CustomerRecord[] customerRecords = template.getForObject(urlTemplate, CustomerRecord[].class);
-        if(customerRecords != null) return new ArrayList<>(Arrays.asList(customerRecords));
+        if(customerRecords != null) return CompletableFuture.completedFuture(new ArrayList<>(Arrays.asList(customerRecords)));
         else throw new EntityNotFoundException("customer records could not be retrieved");
     }
 
-    public CustomerRecord getCustomerByName(String firstName) throws EntityNotFoundException {
+    @Async
+    public CompletableFuture<CustomerRecord> getCustomerByName(String firstName) throws EntityNotFoundException {
         if(customersHost == null || customerGetByNameUrl == null) throw new RuntimeException("failed to load environment");
 
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customerGetByNameUrl)
@@ -62,20 +66,22 @@ public class RestFetcher {
 
         log.debug("calling customers /getCustomerByFirstName");
         CustomerRecord customerRecord = template.getForObject(urlTemplate, CustomerRecord.class);
-        if(customerRecord != null) return customerRecord;
+        if(customerRecord != null) return CompletableFuture.completedFuture(customerRecord);
         else throw new EntityNotFoundException("customer not found");
     }
 
-    public Boolean customerExists(String firstName) {
+    @Async
+    public CompletableFuture<Boolean> customerExists(String firstName) {
         if(customersHost == null || customerExistsUrl == null)  throw new RuntimeException("failed to load environment");
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customerExistsUrl)
                 .queryParam("firstName", firstName).toUriString();
 
         log.debug("calling customers /customerExists");
-        return template.getForObject(urlTemplate, Boolean.class);
+        return CompletableFuture.completedFuture(template.getForObject(urlTemplate, Boolean.class));
     }
 
-    public CustomerRecord seatCustomer(String firstName, String address, Float cash, Integer tableNumber) {
+    @Async
+    public CompletableFuture<CustomerRecord> seatCustomer(String firstName, String address, Float cash, Integer tableNumber) {
         if(customersHost == null || customersSeatUrl == null) throw new RuntimeException("failed to load environment");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -88,28 +94,26 @@ public class RestFetcher {
 
         log.debug("calling customers /insertCustomer");
         HttpEntity<String> request = new HttpEntity<>(headers);
-        return template.postForObject(urlTemplate, request, CustomerRecord.class);
+        return CompletableFuture.completedFuture(template.postForObject(urlTemplate, request, CustomerRecord.class));
     }
 
-    public CustomerRecord bootCustomer(String misbehavingCustomer) {
+    @Async
+    public CompletableFuture<CustomerRecord> bootCustomer(String misbehavingCustomer) {
         if(customersHost == null || customersBootUrl == null) throw new RuntimeException("failed to load environment");
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(headers);
 
-        System.out.println(customersHost);
-        System.out.println(customersBootUrl);
-        System.out.println(misbehavingCustomer);
-
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customersBootUrl)
                 .queryParam("firstName", misbehavingCustomer).toUriString();
 
         log.debug("calling customers /bootCustomer");
-        return template.postForObject(urlTemplate, request, CustomerRecord.class);
+        return CompletableFuture.completedFuture(template.postForObject(urlTemplate, request, CustomerRecord.class));
     }
 
-    public OrderRecord submitOrder(String firstName, String dish, Integer tableNumber, Float bill){
+    @Async
+    public CompletableFuture<OrderRecord> submitOrder(String firstName, String dish, Integer tableNumber, Float bill){
         if(ordersHost == null || orderSubmitUrl == null) throw new RuntimeException("failed to load environment");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -122,10 +126,12 @@ public class RestFetcher {
                 .queryParam("bill", bill).toUriString();
 
         log.debug("calling orders /insertOrder");
-        return template.postForObject(urlTemplate, request, OrderRecord.class);
+        return CompletableFuture.completedFuture(template.postForObject(urlTemplate, request, OrderRecord.class));
     }
 
-    public List<TableRecord> getAllTables() throws EntityNotFoundException{
+    @Async
+    public CompletableFuture<List<TableRecord>> getAllTables() throws EntityNotFoundException {
+
         if(tablesHost == null || tableGetAllUrl == null) throw new RuntimeException("failed to load environment");
 
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(tablesHost + tableGetAllUrl).toUriString();
@@ -133,7 +139,7 @@ public class RestFetcher {
         log.debug("calling tables /getAllTables");
         TableRecord[] tableRecordList = template.getForObject(urlTemplate, TableRecord[].class);
 
-        if(tableRecordList != null) return new ArrayList<>(Arrays.asList(tableRecordList));
+        if(tableRecordList != null) return CompletableFuture.completedFuture(new ArrayList<>(Arrays.asList(tableRecordList)));
         else throw new EntityNotFoundException("no tables found");
     }
 }

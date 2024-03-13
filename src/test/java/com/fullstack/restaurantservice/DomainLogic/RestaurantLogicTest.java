@@ -14,7 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.util.ReflectionTestUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -28,59 +31,62 @@ public class RestaurantLogicTest {
     @Autowired
     RestaurantLogic restaurantLogic;
 
-    List<TableRecord> expectedAllTables = new ArrayList<>(Arrays.asList(
+    CompletableFuture<List<TableRecord>> expectedAllTables = CompletableFuture.completedFuture(new ArrayList<>(Arrays.asList(
             TableRecord.builder().tableNumber(1).capacity(4).build(),
             TableRecord.builder().tableNumber(2).capacity(4).build(),
-            TableRecord.builder().tableNumber(3).capacity(6).build()));
+            TableRecord.builder().tableNumber(3).capacity(6).build())));
 
-    List<CustomerRecord> expectedAllCustomers = new ArrayList<>(Arrays.asList(
+    CompletableFuture<List<CustomerRecord>> expectedAllCustomers = CompletableFuture.completedFuture(new ArrayList<>(Arrays.asList(
             CustomerRecord.builder().firstName("alice").address("test address1").tableNumber(1).cash(1.00f).build(),
             CustomerRecord.builder().firstName("bob").address("test address2").tableNumber(2).cash(15.25f).build(),
-            CustomerRecord.builder().firstName("chuck").address("test address3").tableNumber(2).cash(100.01f).build()
-    ));
+            CustomerRecord.builder().firstName("chuck").address("test address3").tableNumber(2).cash(100.01f).build())));
 
     @BeforeEach
-    void setup() throws EntityNotFoundException {
+    void setup() throws EntityNotFoundException, ExecutionException, InterruptedException {
 
         ReflectionTestUtils.setField(restaurantLogic, "restFetcher", fetcherMock);
 
         when(fetcherMock.getAllTables()).thenReturn(expectedAllTables);
         when(fetcherMock.getAllCustomers()).thenReturn(expectedAllCustomers);
+        when(fetcherMock.bootCustomer(anyString())).thenReturn(CompletableFuture.completedFuture(expectedAllCustomers.get().get(0)));
     }
 
     @Test
-    void seatCustomer() throws EntityNotFoundException {
+    void seatCustomer() throws EntityNotFoundException, ExecutionException, InterruptedException {
         clearInvocations(fetcherMock);
 
-        CustomerRecord expectedSeatedCustomer = CustomerRecord.builder()
-                .firstName("dick").address("test address4").cash(9.87f).tableNumber(3).build();
+        when(fetcherMock.customerExists(anyString())).thenReturn(CompletableFuture.completedFuture(false));
+
+        CompletableFuture<CustomerRecord> expectedSeatedCustomer = CompletableFuture.completedFuture(CustomerRecord.builder()
+                .firstName("dick").address("test address4").cash(9.87f).tableNumber(3).build());
 
         when(fetcherMock.seatCustomer("dick", "test address4", 9.87f, 3))
                 .thenReturn(expectedSeatedCustomer);
-        CustomerRecord returnedCustomer = restaurantLogic.seatCustomer("dick", "test address4", 9.87f);
+        CompletableFuture<CustomerRecord> returnedCustomer = restaurantLogic.seatCustomer("dick", "test address4", 9.87f);
+        CompletableFuture.allOf(expectedSeatedCustomer, returnedCustomer).join();
 
-        assert(expectedSeatedCustomer.equals(returnedCustomer));
+        assert(expectedSeatedCustomer.get().equals(returnedCustomer.get()));
         verify(fetcherMock, times(1)).getAllTables();
         verify(fetcherMock, times(1)).getAllCustomers();
         verify(fetcherMock, times(1)).seatCustomer(anyString(), anyString(), anyFloat(), anyInt());
     }
 
     @Test
-    void getOpenTablesTest() throws EntityNotFoundException {
+    void getOpenTablesTest() throws Exception {
         clearInvocations(fetcherMock);
 
-        List<TableRecord> expectedOpenTables = new ArrayList<>(Arrays.asList(
+        List<TableRecord> expectedOpenTables = new ArrayList<>(Collections.singletonList(
                 TableRecord.builder().tableNumber(3).capacity(6).build()));
 
-        List<TableRecord> returnedTables = restaurantLogic.getOpenTables();
+        CompletableFuture<List<TableRecord>> returnedTables = restaurantLogic.getOpenTables();
 
-        assert(expectedOpenTables.equals(returnedTables));
+        assert(expectedOpenTables.equals(returnedTables.get()));
         verify(fetcherMock, times(1)).getAllTables();
         verify(fetcherMock, times(1)).getAllCustomers();
     }
 
     @Test
-    void submitOrderTest() throws EntityNotFoundException {
+    void submitOrderTest() throws EntityNotFoundException, ExecutionException, InterruptedException {
         clearInvocations(fetcherMock);
 
         OrderRecord expectedRecord = OrderRecord.builder()
@@ -89,20 +95,34 @@ public class RestaurantLogicTest {
         CustomerRecord customer = CustomerRecord.builder().firstName("alice").address("test address1")
                 .cash(12.00f).tableNumber(1).build();
 
-        when(fetcherMock.getCustomerByName("alice")).thenReturn(customer);
-        when(fetcherMock.customerExists("alice")).thenReturn(true);
-        when(fetcherMock.submitOrder("alice", "food", 1, 10.00f)).thenReturn(expectedRecord);
+        when(fetcherMock.getCustomerByName("alice")).thenReturn(CompletableFuture.completedFuture(customer));
+        when(fetcherMock.customerExists("alice")).thenReturn(CompletableFuture.completedFuture(true));
+        when(fetcherMock.submitOrder("alice", "food", 1, 10.00f)).thenReturn(CompletableFuture.completedFuture(expectedRecord));
 
-        OrderRecord returnedOrder;
+        CompletableFuture<OrderRecord> returnedOrder;
         try {
             returnedOrder = restaurantLogic.submitOrder("alice", "food", 1, 10.00f);
         } catch (EntityNotFoundException e) {
             throw new RuntimeException(e);
         }
 
-        assert(expectedRecord.equals(returnedOrder));
+        assert(expectedRecord.equals(returnedOrder.get()));
         verify(fetcherMock, times(1)).getCustomerByName(anyString());
         verify(fetcherMock, times(1)).customerExists(anyString());
         verify(fetcherMock, times(1)).submitOrder(anyString(), anyString(), anyInt(), anyFloat());
+    }
+
+    @Test
+    void bootCustomerTest() throws EntityNotFoundException, ExecutionException, InterruptedException {
+        CustomerRecord expected =
+                new CustomerRecord("alice", "test address1", 1.00f, 1);
+
+        when(fetcherMock.customerExists(anyString())).thenReturn(CompletableFuture.completedFuture(true));
+
+        CompletableFuture<CustomerRecord> ret = restaurantLogic.bootCustomer("alice");
+
+        assert(ret.get().equals(expected));
+        verify(fetcherMock, times(1)).customerExists(anyString());
+        verify(fetcherMock, times(1)).bootCustomer(anyString());
     }
 }
