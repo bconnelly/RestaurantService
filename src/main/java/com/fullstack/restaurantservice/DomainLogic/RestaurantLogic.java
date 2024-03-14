@@ -27,7 +27,7 @@ public class RestaurantLogic {
     public CompletableFuture<CustomerRecord> seatCustomer(String firstName, String address, Float cash) throws EntityNotFoundException, ExecutionException, InterruptedException {
         List<TableRecord> openTables = getOpenTables().get();
         if(openTables.isEmpty()) throw new EntityNotFoundException("no empty tables");
-        if(restFetcher.customerExists(firstName).get()) throw new RuntimeException("customer already in restaurant");
+
         return restFetcher.seatCustomer(firstName, address, cash, openTables.get(0).tableNumber());
     }
 
@@ -48,18 +48,12 @@ public class RestaurantLogic {
     }
 
     public CompletableFuture<OrderRecord> submitOrder(String firstName, String dish, Integer tableNumber, Float bill) throws EntityNotFoundException, RuntimeException, ExecutionException, InterruptedException {
-
-        if(!restFetcher.customerExists(firstName).get()) throw new EntityNotFoundException("customer not found in restaurant");
         CustomerRecord customer = restFetcher.getCustomerByName(firstName).get();
         if(customer.cash() < bill) throw new RuntimeException("customer has insufficient funds");
         return restFetcher.submitOrder(firstName, dish, tableNumber, bill);
     }
 
     public CompletableFuture<CustomerRecord> bootCustomer(String firstName) throws EntityNotFoundException, ExecutionException, InterruptedException {
-
-        CompletableFuture<Boolean> exists = restFetcher.customerExists(firstName);
-        if (!exists.get()) throw new EntityNotFoundException("customer not found in restaurant");
-
         CompletableFuture<CustomerRecord> bootedCustomer = restFetcher.bootCustomer(firstName);
         return CompletableFuture.completedFuture(bootedCustomer.get());
 
