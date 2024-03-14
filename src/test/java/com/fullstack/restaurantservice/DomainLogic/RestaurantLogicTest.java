@@ -55,8 +55,6 @@ public class RestaurantLogicTest {
     void seatCustomer() throws EntityNotFoundException, ExecutionException, InterruptedException {
         clearInvocations(fetcherMock);
 
-        when(fetcherMock.customerExists(anyString())).thenReturn(CompletableFuture.completedFuture(false));
-
         CompletableFuture<CustomerRecord> expectedSeatedCustomer = CompletableFuture.completedFuture(CustomerRecord.builder()
                 .firstName("dick").address("test address4").cash(9.87f).tableNumber(3).build());
 
@@ -96,7 +94,6 @@ public class RestaurantLogicTest {
                 .cash(12.00f).tableNumber(1).build();
 
         when(fetcherMock.getCustomerByName("alice")).thenReturn(CompletableFuture.completedFuture(customer));
-        when(fetcherMock.customerExists("alice")).thenReturn(CompletableFuture.completedFuture(true));
         when(fetcherMock.submitOrder("alice", "food", 1, 10.00f)).thenReturn(CompletableFuture.completedFuture(expectedRecord));
 
         CompletableFuture<OrderRecord> returnedOrder;
@@ -108,7 +105,6 @@ public class RestaurantLogicTest {
 
         assert(expectedRecord.equals(returnedOrder.get()));
         verify(fetcherMock, times(1)).getCustomerByName(anyString());
-        verify(fetcherMock, times(1)).customerExists(anyString());
         verify(fetcherMock, times(1)).submitOrder(anyString(), anyString(), anyInt(), anyFloat());
     }
 
@@ -117,12 +113,9 @@ public class RestaurantLogicTest {
         CustomerRecord expected =
                 new CustomerRecord("alice", "test address1", 1.00f, 1);
 
-        when(fetcherMock.customerExists(anyString())).thenReturn(CompletableFuture.completedFuture(true));
-
         CompletableFuture<CustomerRecord> ret = restaurantLogic.bootCustomer("alice");
 
         assert(ret.get().equals(expected));
-        verify(fetcherMock, times(1)).customerExists(anyString());
         verify(fetcherMock, times(1)).bootCustomer(anyString());
     }
 }
