@@ -13,17 +13,11 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
-import static java.util.concurrent.CompletableFuture.allOf;
 
 @Slf4j
-@EnableAsync
 @RestController
 @SpringBootApplication
 public class RestaurantServiceApplication extends SpringBootServletInitializer {
@@ -47,30 +41,30 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     }
 
     @PostMapping("/seatCustomer")
-    public CompletableFuture<CustomerRecord> seatCustomer(@RequestParam("firstName") String firstName,
+    public CustomerRecord seatCustomer(@RequestParam("firstName") String firstName,
                                                        @RequestParam("address") String address,
-                                                       @RequestParam("cash") Float cash) throws EntityNotFoundException, ExecutionException, InterruptedException {
+                                                       @RequestParam("cash") Float cash) throws EntityNotFoundException {
         log.debug("seatCustomer requested");
         return restaurantLogic.seatCustomer(firstName, address, cash);
     }
 
     @GetMapping("/getOpenTables")
-    public CompletableFuture<List<TableRecord>> getOpenTables() throws EntityNotFoundException, ExecutionException, InterruptedException {
+    public List<TableRecord> getOpenTables() throws EntityNotFoundException {
         log.debug("getOpenTables requested");
         return restaurantLogic.getOpenTables();
     }
 
     @PostMapping("/submitOrder")
-    public CompletableFuture<OrderRecord> submitOrder(@RequestParam("firstName")String firstName,
+    public OrderRecord submitOrder(@RequestParam("firstName")String firstName,
                                                    @RequestParam("dish")String dish,
                                                    @RequestParam("tableNumber")Integer tableNumber,
-                                                   @RequestParam("bill")Float bill) throws EntityNotFoundException, ExecutionException, InterruptedException {
+                                                   @RequestParam("bill")Float bill) throws EntityNotFoundException {
         log.debug("submitOrder requested");
         return restaurantLogic.submitOrder(firstName, dish, tableNumber, bill);
     }
 
     @PostMapping("/bootCustomer")
-    public CompletableFuture<CustomerRecord> bootCustomer(@RequestParam("firstName") String firstName) throws EntityNotFoundException, ExecutionException, InterruptedException {
+    public CustomerRecord bootCustomer(@RequestParam("firstName") String firstName) throws EntityNotFoundException {
         log.debug("bootCustomer requested");
         return restaurantLogic.bootCustomer(firstName);
     }

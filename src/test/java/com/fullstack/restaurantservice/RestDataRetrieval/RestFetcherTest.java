@@ -23,7 +23,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -44,7 +44,7 @@ class RestFetcherTest {
     }
 
     @Test
-    void getAllCustomers() throws EntityNotFoundException, ExecutionException, InterruptedException {
+    void getAllCustomers() throws EntityNotFoundException {
         CustomerRecord[] expectedResponse = {CustomerRecord.builder().firstName("test person")
                         .address("test address").cash(12.34f).tableNumber(1).build(),
                 CustomerRecord.builder().firstName("another person")
@@ -53,38 +53,38 @@ class RestFetcherTest {
         when(template.getForObject(anyString(), eq(CustomerRecord[].class)))
                 .thenReturn(expectedResponse);
 
-        List<CustomerRecord> response = restFetcher.getAllCustomers().get();
+        List<CustomerRecord> response = restFetcher.getAllCustomers();
         verify(template, times(1)).getForObject(anyString(), eq(CustomerRecord[].class));
         assertEquals(new ArrayList<>(Arrays.asList(expectedResponse)), response);
     }
 
     @Test
-    void getCustomerByName() throws EntityNotFoundException, ExecutionException, InterruptedException {
+    void getCustomerByName() throws EntityNotFoundException {
         CustomerRecord expectedResponse = CustomerRecord.builder().firstName("test person")
                 .address("test address").cash(9.87f).tableNumber(1).build();
 
         when(template.getForObject(anyString(), eq(CustomerRecord.class))).thenReturn(expectedResponse);
 
-        CustomerRecord response = restFetcher.getCustomerByName("test person").get();
+        CustomerRecord response = restFetcher.getCustomerByName("test person");
 
         verify(template, times(1)).getForObject(anyString(), eq(CustomerRecord.class));
         assertEquals(expectedResponse, response);
     }
 
     @Test
-    void customerExists() throws ExecutionException, InterruptedException {
+    void customerExists() {
         Boolean expectedResponse = true;
 
         when(template.getForObject(anyString(), eq(Boolean.class))).thenReturn(expectedResponse);
 
-        Boolean response = restFetcher.customerExists("test").get();
+        Boolean response = restFetcher.customerExists("test");
 
         verify(template, times(1)).getForObject(anyString(), eq(Boolean.class));
         assertEquals(expectedResponse, response);
     }
 
     @Test
-    void seatCustomer() throws ExecutionException, InterruptedException {
+    void seatCustomer() {
         CustomerRecord newCustomerRecord = CustomerRecord.builder()
                 .firstName("test person").address("test address")
                 .cash(54.32f).tableNumber(1).build();
@@ -97,14 +97,14 @@ class RestFetcherTest {
         when(template.postForObject(anyString(), eq(request), eq(CustomerRecord.class))).thenReturn(newCustomerRecord);
 
         CustomerRecord returnedCustomer = restFetcher.seatCustomer(newCustomerRecord.firstName(),
-                newCustomerRecord.address(), newCustomerRecord.cash(), newCustomerRecord.tableNumber()).get();
+                newCustomerRecord.address(), newCustomerRecord.cash(), newCustomerRecord.tableNumber());
 
         verify(template, times(1)).postForObject(anyString(), eq(request), eq(CustomerRecord.class));
         assertEquals(newCustomerRecord, returnedCustomer);
     }
 
     @Test
-    void submitOrder() throws ExecutionException, InterruptedException {
+    void submitOrder() {
         OrderRecord newOrderRecord = OrderRecord.builder().firstName("test person")
                 .dish("test dish").bill(1.23f).tableNumber(1).build();
 
@@ -116,28 +116,28 @@ class RestFetcherTest {
         when(template.postForObject(anyString(), eq(request), eq(OrderRecord.class))).thenReturn(newOrderRecord);
 
         OrderRecord returnedOrder = restFetcher.submitOrder(newOrderRecord.firstName(),
-                newOrderRecord.dish(), newOrderRecord.tableNumber(), newOrderRecord.bill()).get();
+                newOrderRecord.dish(), newOrderRecord.tableNumber(), newOrderRecord.bill());
 
         verify(template).postForObject(anyString(), eq(request), eq(OrderRecord.class));
         assertEquals(newOrderRecord, returnedOrder);
     }
 
     @Test
-    void getAllTables() throws EntityNotFoundException, ExecutionException, InterruptedException {
+    void getAllTables() throws EntityNotFoundException {
         TableRecord[] expectedTables = {TableRecord.builder().tableNumber(1).capacity(2).build(),
                                     TableRecord.builder().tableNumber(2).capacity(2).build(),
                                     TableRecord.builder().tableNumber(3).capacity(4).build()};
 
         when(template.getForObject(anyString(), eq(TableRecord[].class))).thenReturn(expectedTables);
 
-        List<TableRecord> returnedTables = restFetcher.getAllTables().get();
+        List<TableRecord> returnedTables = restFetcher.getAllTables();
 
         verify(template, times(1)).getForObject(anyString(), eq(TableRecord[].class));
         assertEquals(new ArrayList<>(Arrays.asList(expectedTables)), returnedTables);
     }
 
     @Test
-    void bootCustomer() throws ExecutionException, InterruptedException {
+    void bootCustomer() {
         CustomerRecord misbehavingCustomer = CustomerRecord.builder()
                 .firstName("alice").address("123 whatever st").cash(32.10f).tableNumber(1).build();
 
@@ -147,7 +147,7 @@ class RestFetcherTest {
 
         when(template.postForObject(anyString(), eq(request), eq(CustomerRecord.class))).thenReturn(misbehavingCustomer);
 
-        CustomerRecord returnedCustomer = restFetcher.bootCustomer("alice").get();
+        CustomerRecord returnedCustomer = restFetcher.bootCustomer("alice");
 
         verify(template, times(1)).postForObject(anyString(), eq(request), eq(CustomerRecord.class));
         assertEquals(misbehavingCustomer, returnedCustomer);
