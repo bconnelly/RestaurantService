@@ -45,8 +45,6 @@ public class RestaurantLogic {
     }
 
     public CustomerRecord bootCustomer(String firstName) throws EntityNotFoundException {
-        CustomerRecord bootedCustomer = restFetcher.bootCustomer(firstName);
-        return bootedCustomer;
-
+        return restFetcher.bootCustomer(firstName);
     }
 }
