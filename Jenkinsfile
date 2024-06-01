@@ -28,7 +28,7 @@ pipeline{
             steps{
                 unstash 'restaurant-repo'
                 sh '''
-                    cat /root/jenkins/restaurant-resources/dockerhub-pass | docker login --username=$DOCKER_USER --password-stdin
+                    #cat /root/jenkins/restaurant-resources/dockerhub-pass | docker login --username=$DOCKER_USER --password-stdin
                     cp /root/jenkins/restaurant-resources/tomcat-users.xml .
                     cp /root/jenkins/restaurant-resources/context.xml .
                     cp /root/jenkins/restaurant-resources/server.xml .
