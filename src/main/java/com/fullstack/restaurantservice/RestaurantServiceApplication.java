@@ -11,8 +11,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -68,8 +66,8 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
         restaurantLogic.serveOrder(first_name, table_number);
     }
 
-    @PostMapping("/serveOrder")
-    public void serveOrder(int id){
+    @PostMapping("/serveOrderId")
+    public void serveOrderId(int id){
 
     }
 

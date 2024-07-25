@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 public class RestaurantLogicTest {
+
     @Mock
     RestFetcher fetcherMock;
 
@@ -114,5 +115,14 @@ public class RestaurantLogicTest {
 
         assert(ret.equals(expected));
         verify(fetcherMock, times(1)).bootCustomer(anyString());
+    }
+
+    @Test
+    void serveOrderTest(){
+        clearInvocations(fetcherMock);
+
+        restaurantLogic.serveOrder("alice", 1);
+
+        verify(fetcherMock, times(1)).serveOrder(anyString(), anyInt());
     }
 }
