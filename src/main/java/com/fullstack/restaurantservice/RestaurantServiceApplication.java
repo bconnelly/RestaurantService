@@ -63,6 +63,16 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
         return restaurantLogic.submitOrder(firstName, dish, tableNumber, bill);
     }
 
+    @PostMapping("/serveOrder")
+    public void serveOrder(String first_name, int table_number){
+        restaurantLogic.serveOrder(first_name, table_number);
+    }
+
+    @PostMapping("/serveOrder")
+    public void serveOrder(int id){
+
+    }
+
     @PostMapping("/bootCustomer")
     public CustomerRecord bootCustomer(@RequestParam("firstName") String firstName) throws EntityNotFoundException {
         log.debug("bootCustomer requested");

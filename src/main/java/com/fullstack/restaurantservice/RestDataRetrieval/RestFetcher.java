@@ -42,6 +42,8 @@ public class RestFetcher {
     private String customersBootUrl;
     @Value("${orders.submit.endpoint}")
     private String orderSubmitUrl;
+    @Value("${orders.serve.endpoint")
+    private String serveOrder;
     @Value("${tables.get-all.endpoint}")
     private String tableGetAllUrl;
 
@@ -124,7 +126,6 @@ public class RestFetcher {
     }
 
     public List<TableRecord> getAllTables() throws EntityNotFoundException {
-
         if(tablesHost == null || tableGetAllUrl == null) throw new RuntimeException("failed to load environment");
 
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(tablesHost + tableGetAllUrl).toUriString();
@@ -134,5 +135,19 @@ public class RestFetcher {
 
         if(tableRecordList != null) return new ArrayList<>(Arrays.asList(tableRecordList));
         else throw new EntityNotFoundException("no tables found");
+    }
+
+    public OrderRecord serveOrder(String firstName, int tableNumber) {
+        if(tablesHost == null || tableGetAllUrl == null) throw new RuntimeException("failed to load environment");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(headers);
+
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl(ordersHost + serveOrder)
+                .queryParam("firstName", firstName)
+                .queryParam("tableNumber", tableNumber).toUriString();
+
+        log.debug("calling orders /serveOrder");
+        return template.postForObject(urlTemplate, request, OrderRecord.class);
     }
 }

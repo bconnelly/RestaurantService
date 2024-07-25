@@ -24,7 +24,7 @@ public class RestaurantLogic {
     public CustomerRecord seatCustomer(String firstName, String address, Float cash) throws EntityNotFoundException {
         List<TableRecord> openTables = getOpenTables();
         if(openTables.isEmpty()) throw new EntityNotFoundException("no empty tables");
-
+//        HttpServletRequest
         return restFetcher.seatCustomer(firstName, address, cash, openTables.get(0).tableNumber());
     }
 
@@ -46,5 +46,9 @@ public class RestaurantLogic {
 
     public CustomerRecord bootCustomer(String firstName) throws EntityNotFoundException {
         return restFetcher.bootCustomer(firstName);
+    }
+
+    public OrderRecord serveOrder(String firstName, int tableNumber) {
+        return restFetcher.serveOrder(firstName, tableNumber);
     }
 }
