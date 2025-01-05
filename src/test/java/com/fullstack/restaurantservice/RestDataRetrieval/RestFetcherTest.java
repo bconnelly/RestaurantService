@@ -92,7 +92,7 @@ class RestFetcherTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<String> request = new HttpEntity<>(headers);
+        HttpEntity<CustomerRecord> request = new HttpEntity<>(newCustomerRecord, headers);
 
         when(template.postForObject(anyString(), eq(request), eq(CustomerRecord.class))).thenReturn(newCustomerRecord);
 
@@ -152,4 +152,21 @@ class RestFetcherTest {
         verify(template, times(1)).postForObject(anyString(), eq(request), eq(CustomerRecord.class));
         assertEquals(misbehavingCustomer, returnedCustomer);
     }
+
+//    @Test
+//    void serveOrderTest(){
+//        OrderRecord orderToServe = OrderRecord.builder()
+//                .firstName("alice").dish("burger").bill(10.99f).tableNumber(1).build();
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        HttpEntity<String> request = new HttpEntity<>(headers);
+//
+//        when(template.postForObject(anyString(), eq(request), eq(OrderRecord.class))).thenReturn(orderToServe);
+//
+//        OrderRecord servedOrder = restFetcher.serveOrder("alice", 1);
+//
+////        verify(template, times(1)).postForObject(anyString(), eq(request), eq(OrderRecord.class));
+//        assertEquals(orderToServe, servedOrder);
+//    }
 }

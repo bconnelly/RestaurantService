@@ -59,12 +59,34 @@ public class RestaurantLogicTest {
 
         when(fetcherMock.seatCustomer("dick", "test address4", 9.87f, 3))
                 .thenReturn(expectedSeatedCustomer);
+
         CustomerRecord returnedCustomer = restaurantLogic.seatCustomer("dick", "test address4", 9.87f);
 
         assert(expectedSeatedCustomer.equals(returnedCustomer));
         verify(fetcherMock, times(1)).getAllTables();
         verify(fetcherMock, times(1)).getAllCustomers();
         verify(fetcherMock, times(1)).seatCustomer(anyString(), anyString(), anyFloat(), anyInt());
+    }
+
+    @Test
+    void seatGroup() throws EntityNotFoundException {
+        clearInvocations(fetcherMock);
+
+        CustomerRecord expectedCustomer1 = CustomerRecord.builder()
+                .firstName("abc").address("abc").cash(10.10f).tableNumber(0).build();
+        CustomerRecord expectedCustomer2 = CustomerRecord.builder()
+                .firstName("xyz").address("abc").cash(10.10f).tableNumber(0).build();
+
+        List<CustomerRecord> customers = Arrays.asList(expectedCustomer1, expectedCustomer2);
+        when(fetcherMock.seatGroup(anyList())).thenReturn(customers);
+
+        List<CustomerRecord> seated = restaurantLogic.seatGroup(customers);
+
+        assert(customers.equals(seated));
+        verify(fetcherMock, times(1)).getAllTables();
+        verify(fetcherMock, times(1)).getAllCustomers();
+        verify(fetcherMock, times(1)).seatGroup(anyList());
+
     }
 
     @Test
@@ -108,6 +130,8 @@ public class RestaurantLogicTest {
 
     @Test
     void bootCustomerTest() throws EntityNotFoundException {
+        clearInvocations(fetcherMock);
+
         CustomerRecord expected =
                 new CustomerRecord("alice", "test address1", 1.00f, 1);
 

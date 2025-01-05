@@ -6,16 +6,14 @@ import com.fullstack.restaurantservice.DataEntities.TableRecord;
 import com.fullstack.restaurantservice.Utilities.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 import org.springframework.http.*;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 
 @Slf4j
 @Component
@@ -38,11 +36,13 @@ public class RestFetcher {
     private String customerExistsUrl;
     @Value("${customers.seat.endpoint}")
     private String customersSeatUrl;
+    @Value("${customers.seat-group.endpoint}")
+    private String customersSeatGroupUrl;
     @Value("${customers.boot.endpoint}")
     private String customersBootUrl;
     @Value("${orders.submit.endpoint}")
     private String orderSubmitUrl;
-    @Value("${orders.serve.endpoint")
+    @Value("${orders.serve.endpoint}")
     private String serveOrder;
     @Value("${tables.get-all.endpoint}")
     private String tableGetAllUrl;
@@ -69,7 +69,7 @@ public class RestFetcher {
         if(customerRecord != null) return customerRecord;
         else throw new EntityNotFoundException("customer not found");
     }
-    
+
     public Boolean customerExists(String firstName) {
         if(customersHost == null || customerExistsUrl == null)  throw new RuntimeException("failed to load environment");
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customerExistsUrl)
@@ -78,21 +78,37 @@ public class RestFetcher {
         log.debug("calling customers /customerExists");
         return template.getForObject(urlTemplate, Boolean.class);
     }
-    
+
     public CustomerRecord seatCustomer(String firstName, String address, Float cash, Integer tableNumber) {
         if(customersHost == null || customersSeatUrl == null) throw new RuntimeException("failed to load environment");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customersSeatUrl)
-                .queryParam("firstName", firstName)
-                .queryParam("address", address)
-                .queryParam("cash", cash)
-                .queryParam("tableNumber", tableNumber).toUriString();
+        CustomerRecord customerRecord = CustomerRecord.builder()
+                .firstName(firstName)
+                .address(address)
+                .cash(cash)
+                .tableNumber(tableNumber)
+                .build();
+
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customersSeatUrl).toUriString();
 
         log.debug("calling customers /insertCustomer");
-        HttpEntity<String> request = new HttpEntity<>(headers);
+        HttpEntity<CustomerRecord> request = new HttpEntity<>(customerRecord, headers);
         return template.postForObject(urlTemplate, request, CustomerRecord.class);
+    }
+
+    public List<CustomerRecord> seatGroup(List<CustomerRecord> customers) {
+        if(customersHost == null || customersSeatGroupUrl == null) throw new RuntimeException("failed to load environment");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customersSeatGroupUrl).toUriString();
+
+        log.debug("calling customers /insertGroup");
+        HttpEntity<List<CustomerRecord>> request = new HttpEntity<>(customers, headers);
+
+        return template.postForObject(urlTemplate, request, List.class);
     }
 
     public CustomerRecord bootCustomer(String misbehavingCustomer) {
@@ -108,7 +124,7 @@ public class RestFetcher {
         log.debug("calling customers /bootCustomer");
         return template.postForObject(urlTemplate, request, CustomerRecord.class);
     }
-    
+
     public OrderRecord submitOrder(String firstName, String dish, Integer tableNumber, Float bill){
         if(ordersHost == null || orderSubmitUrl == null) throw new RuntimeException("failed to load environment");
         HttpHeaders headers = new HttpHeaders();

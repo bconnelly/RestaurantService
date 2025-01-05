@@ -40,10 +40,16 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
 
     @PostMapping("/seatCustomer")
     public CustomerRecord seatCustomer(@RequestParam("firstName") String firstName,
-                                                       @RequestParam("address") String address,
-                                                       @RequestParam("cash") Float cash) throws EntityNotFoundException {
+                                       @RequestParam("address") String address,
+                                       @RequestParam("cash") Float cash) throws EntityNotFoundException {
         log.debug("seatCustomer requested");
         return restaurantLogic.seatCustomer(firstName, address, cash);
+    }
+
+    @PostMapping("/seatGroup")
+    public List<CustomerRecord> seatGroup(@RequestBody List<CustomerRecord> customers) throws EntityNotFoundException {
+        log.debug("seatGroup requested");
+        return restaurantLogic.seatGroup(customers);
     }
 
     @GetMapping("/getOpenTables")
@@ -54,21 +60,16 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
 
     @PostMapping("/submitOrder")
     public OrderRecord submitOrder(@RequestParam("firstName")String firstName,
-                                                   @RequestParam("dish")String dish,
-                                                   @RequestParam("tableNumber")Integer tableNumber,
-                                                   @RequestParam("bill")Float bill) throws EntityNotFoundException {
+                                   @RequestParam("dish")String dish,
+                                   @RequestParam("tableNumber")Integer tableNumber,
+                                   @RequestParam("bill")Float bill) throws EntityNotFoundException {
         log.debug("submitOrder requested");
         return restaurantLogic.submitOrder(firstName, dish, tableNumber, bill);
     }
 
     @PostMapping("/serveOrder")
-    public void serveOrder(String first_name, int table_number){
-        restaurantLogic.serveOrder(first_name, table_number);
-    }
-
-    @PostMapping("/serveOrderId")
-    public void serveOrderId(int id){
-
+    public void serveOrder(String firstName, int tableNumber){
+        restaurantLogic.serveOrder(firstName, tableNumber);
     }
 
     @PostMapping("/bootCustomer")
