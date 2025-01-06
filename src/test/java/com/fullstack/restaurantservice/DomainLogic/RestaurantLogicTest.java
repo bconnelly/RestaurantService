@@ -5,13 +5,10 @@ import com.fullstack.restaurantservice.DataEntities.OrderRecord;
 import com.fullstack.restaurantservice.DataEntities.TableRecord;
 import com.fullstack.restaurantservice.RestDataRetrieval.RestFetcher;
 import com.fullstack.restaurantservice.Utilities.EntityNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.util.ReflectionTestUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,44 +18,34 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 public class RestaurantLogicTest {
 
+    @InjectMocks
+    private RestaurantLogic restaurantLogic;
+
     @Mock
-    RestFetcher fetcherMock;
+    private RestFetcher fetcherMock;
 
-    @Autowired
-    RestaurantLogic restaurantLogic;
-
-    List<TableRecord> expectedAllTables = new ArrayList<>(Arrays.asList(
+    private final List<TableRecord> expectedAllTables = new ArrayList<>(Arrays.asList(
             TableRecord.builder().tableNumber(1).capacity(4).build(),
             TableRecord.builder().tableNumber(2).capacity(4).build(),
             TableRecord.builder().tableNumber(3).capacity(6).build()));
 
-    List<CustomerRecord> expectedAllCustomers = new ArrayList<>(Arrays.asList(
+    private final List<CustomerRecord> expectedAllCustomers = new ArrayList<>(Arrays.asList(
             CustomerRecord.builder().firstName("alice").address("test address1").tableNumber(1).cash(1.00f).build(),
             CustomerRecord.builder().firstName("bob").address("test address2").tableNumber(2).cash(15.25f).build(),
             CustomerRecord.builder().firstName("chuck").address("test address3").tableNumber(2).cash(100.01f).build()));
 
-    @BeforeEach
-    void setup() throws EntityNotFoundException {
-
-        ReflectionTestUtils.setField(restaurantLogic, "restFetcher", fetcherMock);
-
-        when(fetcherMock.getAllTables()).thenReturn(expectedAllTables);
-        when(fetcherMock.getAllCustomers()).thenReturn(expectedAllCustomers);
-        when(fetcherMock.bootCustomer(anyString())).thenReturn(expectedAllCustomers.get(0));
-    }
-
     @Test
     void seatCustomer() throws EntityNotFoundException {
-        clearInvocations(fetcherMock);
 
         CustomerRecord expectedSeatedCustomer = CustomerRecord.builder()
                 .firstName("dick").address("test address4").cash(9.87f).tableNumber(3).build();
 
         when(fetcherMock.seatCustomer("dick", "test address4", 9.87f, 3))
                 .thenReturn(expectedSeatedCustomer);
+        when(fetcherMock.getAllCustomers()).thenReturn(expectedAllCustomers);
+        when(fetcherMock.getAllTables()).thenReturn(expectedAllTables);
 
         CustomerRecord returnedCustomer = restaurantLogic.seatCustomer("dick", "test address4", 9.87f);
 
@@ -70,7 +57,6 @@ public class RestaurantLogicTest {
 
     @Test
     void seatGroup() throws EntityNotFoundException {
-        clearInvocations(fetcherMock);
 
         CustomerRecord expectedCustomer1 = CustomerRecord.builder()
                 .firstName("abc").address("abc").cash(10.10f).tableNumber(0).build();
@@ -79,6 +65,8 @@ public class RestaurantLogicTest {
 
         List<CustomerRecord> customers = Arrays.asList(expectedCustomer1, expectedCustomer2);
         when(fetcherMock.seatGroup(anyList())).thenReturn(customers);
+        when(fetcherMock.getAllCustomers()).thenReturn(expectedAllCustomers);
+        when(fetcherMock.getAllTables()).thenReturn(expectedAllTables);
 
         List<CustomerRecord> seated = restaurantLogic.seatGroup(customers);
 
@@ -91,10 +79,12 @@ public class RestaurantLogicTest {
 
     @Test
     void getOpenTablesTest() throws Exception {
-        clearInvocations(fetcherMock);
 
         List<TableRecord> expectedOpenTables = new ArrayList<>(Collections.singletonList(
                 TableRecord.builder().tableNumber(3).capacity(6).build()));
+
+        when(fetcherMock.getAllCustomers()).thenReturn(expectedAllCustomers);
+        when(fetcherMock.getAllTables()).thenReturn(expectedAllTables);
 
         List<TableRecord> returnedTables = restaurantLogic.getOpenTables();
 
@@ -105,7 +95,6 @@ public class RestaurantLogicTest {
 
     @Test
     void submitOrderTest() throws EntityNotFoundException {
-        clearInvocations(fetcherMock);
 
         OrderRecord expectedRecord = OrderRecord.builder()
                 .firstName("alice").dish("food").bill(10.00f).tableNumber(1).build();
@@ -116,37 +105,39 @@ public class RestaurantLogicTest {
         when(fetcherMock.getCustomerByName("alice")).thenReturn(customer);
         when(fetcherMock.submitOrder("alice", "food", 1, 10.00f)).thenReturn(expectedRecord);
 
-        OrderRecord returnedOrder;
-        try {
-            returnedOrder = restaurantLogic.submitOrder("alice", "food", 1, 10.00f);
-        } catch (EntityNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        OrderRecord returnedOrder = restaurantLogic.submitOrder("alice", "food", 1, 10.00f);
+
 
         assert(expectedRecord.equals(returnedOrder));
         verify(fetcherMock, times(1)).getCustomerByName(anyString());
         verify(fetcherMock, times(1)).submitOrder(anyString(), anyString(), anyInt(), anyFloat());
+
     }
 
     @Test
     void bootCustomerTest() throws EntityNotFoundException {
-        clearInvocations(fetcherMock);
 
         CustomerRecord expected =
                 new CustomerRecord("alice", "test address1", 1.00f, 1);
 
+        when(fetcherMock.bootCustomer("alice")).thenReturn(expected);
+
         CustomerRecord ret = restaurantLogic.bootCustomer("alice");
 
         assert(ret.equals(expected));
-        verify(fetcherMock, times(1)).bootCustomer(anyString());
+        verify(fetcherMock, times(1)).bootCustomer("alice");
     }
 
     @Test
     void serveOrderTest(){
-        clearInvocations(fetcherMock);
 
-        restaurantLogic.serveOrder("alice", 1);
+        OrderRecord expected = OrderRecord.builder().tableNumber(1).firstName("alice").dish("burger").bill(10.98f).build();
+        when(fetcherMock.serveOrder("alice", 1)).thenReturn(expected);
 
-        verify(fetcherMock, times(1)).serveOrder(anyString(), anyInt());
+        OrderRecord ret = restaurantLogic.serveOrder("alice", 1);
+
+        assert(expected.equals(ret));
+
+        verify(fetcherMock, times(1)).serveOrder("alice", 1);
     }
 }

@@ -10,7 +10,6 @@ import com.fullstack.restaurantservice.DataEntities.TableRecord;
 import com.fullstack.restaurantservice.Utilities.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class RestFetcherTest {
 
     @Mock
@@ -54,6 +52,7 @@ class RestFetcherTest {
                 .thenReturn(expectedResponse);
 
         List<CustomerRecord> response = restFetcher.getAllCustomers();
+
         verify(template, times(1)).getForObject(anyString(), eq(CustomerRecord[].class));
         assertEquals(new ArrayList<>(Arrays.asList(expectedResponse)), response);
     }
@@ -153,20 +152,19 @@ class RestFetcherTest {
         assertEquals(misbehavingCustomer, returnedCustomer);
     }
 
-//    @Test
-//    void serveOrderTest(){
-//        OrderRecord orderToServe = OrderRecord.builder()
-//                .firstName("alice").dish("burger").bill(10.99f).tableNumber(1).build();
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//        HttpEntity<String> request = new HttpEntity<>(headers);
-//
-//        when(template.postForObject(anyString(), eq(request), eq(OrderRecord.class))).thenReturn(orderToServe);
-//
-//        OrderRecord servedOrder = restFetcher.serveOrder("alice", 1);
-//
-////        verify(template, times(1)).postForObject(anyString(), eq(request), eq(OrderRecord.class));
-//        assertEquals(orderToServe, servedOrder);
-//    }
+    @Test
+    void serveOrderTest(){
+        OrderRecord orderToServe = OrderRecord.builder()
+                .firstName("alice").dish("burger").bill(10.99f).tableNumber(1).build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(headers);
+
+        when(template.postForObject(anyString(), eq(request), eq(OrderRecord.class))).thenReturn(orderToServe);
+
+        OrderRecord servedOrder = restFetcher.serveOrder("alice", 1);
+
+        assertEquals(orderToServe, servedOrder);
+    }
 }
