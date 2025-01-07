@@ -23,13 +23,13 @@ public class RestaurantLogic {
         this.restFetcher = restFetcher;
     }
 
-    public CustomerRecord seatCustomer(String firstName, String address, Float cash) throws EntityNotFoundException {
+    public CustomerRecord seatCustomer(CustomerRecord customer) throws EntityNotFoundException {
         List<TableRecord> openTables = getOpenTables();
         if(openTables.isEmpty()) {
             throw new EntityNotFoundException("no empty tables");
         }
-        log.info("Seating customer: {}", firstName);
-        return restFetcher.seatCustomer(firstName, address, cash, openTables.get(0).tableNumber());
+        log.info("Seating customer: {}", customer.firstName());
+        return restFetcher.seatCustomer(customer, openTables.get(0).tableNumber());
     }
 
     public List<CustomerRecord> seatGroup(List<CustomerRecord> customers) throws EntityNotFoundException {
@@ -74,14 +74,14 @@ public class RestaurantLogic {
         return allTables;
     }
 
-    public OrderRecord submitOrder(String firstName, String dish, Integer tableNumber, Float bill) throws EntityNotFoundException, RuntimeException {
-        CustomerRecord customer = restFetcher.getCustomerByName(firstName);
-        if(customer.cash() < bill) {
-            log.error("Insufficient funds for customer: {}", firstName);
+    public OrderRecord submitOrder(OrderRecord order) throws EntityNotFoundException, RuntimeException {
+        CustomerRecord customer = restFetcher.getCustomerByName(order.firstName());
+        if(customer.cash() < order.bill()) {
+            log.error("Insufficient funds for customer: {}", order.firstName());
             throw new RuntimeException("customer has insufficient funds");
         }
-        log.info("Order submitted by customer: {} for dish: {}", firstName, dish);
-        return restFetcher.submitOrder(firstName, dish, tableNumber, bill);
+        log.info("Order submitted by customer: {} for dish: {}", order.firstName(), order.dish());
+        return restFetcher.submitOrder(order);
     }
 
     public CustomerRecord bootCustomer(String firstName) throws EntityNotFoundException {

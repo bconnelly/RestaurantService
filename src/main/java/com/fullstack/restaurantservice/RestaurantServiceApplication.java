@@ -39,11 +39,9 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     }
 
     @PostMapping("/seatCustomer")
-    public CustomerRecord seatCustomer(@RequestParam("firstName") String firstName,
-                                       @RequestParam("address") String address,
-                                       @RequestParam("cash") Float cash) throws EntityNotFoundException {
+    public CustomerRecord seatCustomer(@RequestBody CustomerRecord customer) throws EntityNotFoundException {
         log.debug("seatCustomer requested");
-        return restaurantLogic.seatCustomer(firstName, address, cash);
+        return restaurantLogic.seatCustomer(customer);
     }
 
     @PostMapping("/seatGroup")
@@ -59,12 +57,9 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     }
 
     @PostMapping("/submitOrder")
-    public OrderRecord submitOrder(@RequestParam("firstName")String firstName,
-                                   @RequestParam("dish")String dish,
-                                   @RequestParam("tableNumber")Integer tableNumber,
-                                   @RequestParam("bill")Float bill) throws EntityNotFoundException {
+    public OrderRecord submitOrder(@RequestBody OrderRecord order) throws EntityNotFoundException {
         log.debug("submitOrder requested");
-        return restaurantLogic.submitOrder(firstName, dish, tableNumber, bill);
+        return restaurantLogic.submitOrder(order);
     }
 
     @PostMapping("/serveOrder")

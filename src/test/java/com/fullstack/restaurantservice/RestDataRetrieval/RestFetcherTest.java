@@ -95,8 +95,7 @@ class RestFetcherTest {
 
         when(template.postForObject(anyString(), eq(request), eq(CustomerRecord.class))).thenReturn(newCustomerRecord);
 
-        CustomerRecord returnedCustomer = restFetcher.seatCustomer(newCustomerRecord.firstName(),
-                newCustomerRecord.address(), newCustomerRecord.cash(), newCustomerRecord.tableNumber());
+        CustomerRecord returnedCustomer = restFetcher.seatCustomer(newCustomerRecord, newCustomerRecord.tableNumber());
 
         verify(template, times(1)).postForObject(anyString(), eq(request), eq(CustomerRecord.class));
         assertEquals(newCustomerRecord, returnedCustomer);
@@ -107,17 +106,11 @@ class RestFetcherTest {
         OrderRecord newOrderRecord = OrderRecord.builder().firstName("test person")
                 .dish("test dish").bill(1.23f).tableNumber(1).build();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        when(template.postForObject(anyString(), any(HttpEntity.class), eq(OrderRecord.class))).thenReturn(newOrderRecord);
 
-        HttpEntity<String> request = new HttpEntity<>(headers);
+        OrderRecord returnedOrder = restFetcher.submitOrder(newOrderRecord);
 
-        when(template.postForObject(anyString(), eq(request), eq(OrderRecord.class))).thenReturn(newOrderRecord);
-
-        OrderRecord returnedOrder = restFetcher.submitOrder(newOrderRecord.firstName(),
-                newOrderRecord.dish(), newOrderRecord.tableNumber(), newOrderRecord.bill());
-
-        verify(template).postForObject(anyString(), eq(request), eq(OrderRecord.class));
+        verify(template, times(1)).postForObject(anyString(), any(HttpEntity.class), eq(OrderRecord.class));
         assertEquals(newOrderRecord, returnedOrder);
     }
 

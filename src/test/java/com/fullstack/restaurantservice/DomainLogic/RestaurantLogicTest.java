@@ -40,19 +40,18 @@ public class RestaurantLogicTest {
     void seatCustomer() throws EntityNotFoundException {
 
         CustomerRecord expectedSeatedCustomer = CustomerRecord.builder()
-                .firstName("dick").address("test address4").cash(9.87f).tableNumber(3).build();
+                .firstName("dick").address("test address4").cash(9.87f).build();
 
-        when(fetcherMock.seatCustomer("dick", "test address4", 9.87f, 3))
-                .thenReturn(expectedSeatedCustomer);
+        when(fetcherMock.seatCustomer(expectedSeatedCustomer, 3)).thenReturn(expectedSeatedCustomer);
         when(fetcherMock.getAllCustomers()).thenReturn(expectedAllCustomers);
         when(fetcherMock.getAllTables()).thenReturn(expectedAllTables);
 
-        CustomerRecord returnedCustomer = restaurantLogic.seatCustomer("dick", "test address4", 9.87f);
+        CustomerRecord returnedCustomer = restaurantLogic.seatCustomer(expectedSeatedCustomer);
 
         assert(expectedSeatedCustomer.equals(returnedCustomer));
         verify(fetcherMock, times(1)).getAllTables();
         verify(fetcherMock, times(1)).getAllCustomers();
-        verify(fetcherMock, times(1)).seatCustomer(anyString(), anyString(), anyFloat(), anyInt());
+        verify(fetcherMock, times(1)).seatCustomer(expectedSeatedCustomer, 3);
     }
 
     @Test
@@ -96,21 +95,21 @@ public class RestaurantLogicTest {
     @Test
     void submitOrderTest() throws EntityNotFoundException {
 
-        OrderRecord expectedRecord = OrderRecord.builder()
+        OrderRecord expectedOrder = OrderRecord.builder()
                 .firstName("alice").dish("food").bill(10.00f).tableNumber(1).build();
 
         CustomerRecord customer = CustomerRecord.builder().firstName("alice").address("test address1")
                 .cash(12.00f).tableNumber(1).build();
 
         when(fetcherMock.getCustomerByName("alice")).thenReturn(customer);
-        when(fetcherMock.submitOrder("alice", "food", 1, 10.00f)).thenReturn(expectedRecord);
+        when(fetcherMock.submitOrder(expectedOrder)).thenReturn(expectedOrder);
 
-        OrderRecord returnedOrder = restaurantLogic.submitOrder("alice", "food", 1, 10.00f);
+        OrderRecord returnedOrder = restaurantLogic.submitOrder(expectedOrder);
 
 
-        assert(expectedRecord.equals(returnedOrder));
+        assert(expectedOrder.equals(returnedOrder));
         verify(fetcherMock, times(1)).getCustomerByName(anyString());
-        verify(fetcherMock, times(1)).submitOrder(anyString(), anyString(), anyInt(), anyFloat());
+        verify(fetcherMock, times(1)).submitOrder(expectedOrder);
 
     }
 
