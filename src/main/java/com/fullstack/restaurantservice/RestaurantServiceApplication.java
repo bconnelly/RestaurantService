@@ -36,7 +36,7 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     @GetMapping("/")
     public String defaultLandingPage(){
         log.debug("default landing page requested");
-        return "default landing page";
+        return "default page";
     }
 
     @PostMapping("/seatCustomer")
