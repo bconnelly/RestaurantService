@@ -106,11 +106,16 @@ class RestFetcherTest {
         OrderRecord newOrderRecord = OrderRecord.builder().firstName("test person")
                 .dish("test dish").bill(1.23f).tableNumber(1).build();
 
-        when(template.postForObject(anyString(), any(HttpEntity.class), eq(OrderRecord.class))).thenReturn(newOrderRecord);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<OrderRecord> request = new HttpEntity<>(newOrderRecord, headers);
+
+        when(template.postForObject(anyString(), eq(request), eq(OrderRecord.class))).thenReturn(newOrderRecord);
 
         OrderRecord returnedOrder = restFetcher.submitOrder(newOrderRecord);
 
-        verify(template, times(1)).postForObject(anyString(), any(HttpEntity.class), eq(OrderRecord.class));
+        verify(template, times(1)).postForObject(anyString(), eq(request), eq(OrderRecord.class));
         assertEquals(newOrderRecord, returnedOrder);
     }
 
