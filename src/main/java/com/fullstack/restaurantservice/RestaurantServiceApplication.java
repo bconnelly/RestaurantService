@@ -5,6 +5,7 @@ import com.fullstack.restaurantservice.DataEntities.OrderRecord;
 import com.fullstack.restaurantservice.DataEntities.TableRecord;
 import com.fullstack.restaurantservice.DomainLogic.RestaurantLogic;
 import com.fullstack.restaurantservice.Utilities.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -39,13 +40,13 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     }
 
     @PostMapping("/seatCustomer")
-    public CustomerRecord seatCustomer(@RequestBody CustomerRecord customer) throws EntityNotFoundException {
+    public CustomerRecord seatCustomer(@Valid @RequestBody CustomerRecord customer) throws EntityNotFoundException {
         log.debug("seatCustomer requested");
         return restaurantLogic.seatCustomer(customer);
     }
 
     @PostMapping("/seatGroup")
-    public List<CustomerRecord> seatGroup(@RequestBody List<CustomerRecord> customers) throws EntityNotFoundException {
+    public List<CustomerRecord> seatGroup(@Valid @RequestBody List<CustomerRecord> customers) throws EntityNotFoundException {
         log.debug("seatGroup requested");
         return restaurantLogic.seatGroup(customers);
     }
@@ -57,7 +58,7 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     }
 
     @PostMapping("/submitOrder")
-    public OrderRecord submitOrder(@RequestBody OrderRecord order) throws EntityNotFoundException {
+    public OrderRecord submitOrder(@Valid @RequestBody OrderRecord order) throws EntityNotFoundException {
         log.debug("submitOrder requested");
         return restaurantLogic.submitOrder(order);
     }
