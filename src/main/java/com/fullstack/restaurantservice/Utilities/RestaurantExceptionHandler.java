@@ -34,6 +34,7 @@ public class RestaurantExceptionHandler extends ResponseEntityExceptionHandler {
         return exception.getCause() + ", entity or service endpoint not found | " + exception.getMessage();
     }
 
+    @ResponseBody
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public String exceptionHandler(@NotNull Exception exception){
