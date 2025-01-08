@@ -79,15 +79,15 @@ public class RestFetcher {
         return template.getForObject(urlTemplate, Boolean.class);
     }
 
-    public CustomerRecord seatCustomer(CustomerRecord customer, Integer tableNumber) {
+    public CustomerRecord seatCustomer(String firstName, String address, Float cash, Integer tableNumber) {
         if(customersHost == null || customersSeatUrl == null) throw new RuntimeException("failed to load environment");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         CustomerRecord customerRecord = CustomerRecord.builder()
-                .firstName(customer.firstName())
-                .address(customer.address())
-                .cash(customer.cash())
+                .firstName(firstName)
+                .address(address)
+                .cash(cash)
                 .tableNumber(tableNumber)
                 .build();
 
@@ -125,16 +125,19 @@ public class RestFetcher {
         return template.postForObject(urlTemplate, request, CustomerRecord.class);
     }
 
-    public OrderRecord submitOrder(OrderRecord order){
+    public OrderRecord submitOrder(String firstName, String dish, Integer tableNumber, Float bill){
         if(ordersHost == null || orderSubmitUrl == null) throw new RuntimeException("failed to load environment");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(headers);
 
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl(ordersHost + orderSubmitUrl).toUriString();
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl(ordersHost + orderSubmitUrl)
+                .queryParam("firstName", firstName)
+                .queryParam("dish", dish)
+                .queryParam("tableNumber", tableNumber)
+                .queryParam("bill", bill).toUriString();
 
         log.debug("calling orders /insertOrder");
-        HttpEntity<OrderRecord> request = new HttpEntity<>(order, headers);
-
         return template.postForObject(urlTemplate, request, OrderRecord.class);
     }
 
