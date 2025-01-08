@@ -42,16 +42,16 @@ public class RestaurantLogicTest {
         CustomerRecord expectedSeatedCustomer = CustomerRecord.builder()
                 .firstName("dick").address("test address4").cash(9.87f).build();
 
-        when(fetcherMock.seatCustomer(expectedSeatedCustomer, 3)).thenReturn(expectedSeatedCustomer);
+        when(fetcherMock.seatCustomer(expectedSeatedCustomer.firstName(), expectedSeatedCustomer.address(), expectedSeatedCustomer.cash(), 3)).thenReturn(expectedSeatedCustomer);
         when(fetcherMock.getAllCustomers()).thenReturn(expectedAllCustomers);
         when(fetcherMock.getAllTables()).thenReturn(expectedAllTables);
 
-        CustomerRecord returnedCustomer = restaurantLogic.seatCustomer(expectedSeatedCustomer);
+        CustomerRecord returnedCustomer = restaurantLogic.seatCustomer(expectedSeatedCustomer.firstName(), expectedSeatedCustomer.address(), expectedSeatedCustomer.cash());
 
         assert(expectedSeatedCustomer.equals(returnedCustomer));
         verify(fetcherMock, times(1)).getAllTables();
         verify(fetcherMock, times(1)).getAllCustomers();
-        verify(fetcherMock, times(1)).seatCustomer(expectedSeatedCustomer, 3);
+        verify(fetcherMock, times(1)).seatCustomer(expectedSeatedCustomer.firstName(), expectedSeatedCustomer.address(), expectedSeatedCustomer.cash(), 3);
     }
 
     @Test
@@ -102,14 +102,14 @@ public class RestaurantLogicTest {
                 .cash(12.00f).tableNumber(1).build();
 
         when(fetcherMock.getCustomerByName("alice")).thenReturn(customer);
-        when(fetcherMock.submitOrder(expectedOrder)).thenReturn(expectedOrder);
+        when(fetcherMock.submitOrder(expectedOrder.firstName(), expectedOrder.dish(), expectedOrder.tableNumber(), expectedOrder.bill())).thenReturn(expectedOrder);
 
-        OrderRecord returnedOrder = restaurantLogic.submitOrder(expectedOrder);
+        OrderRecord returnedOrder = restaurantLogic.submitOrder(expectedOrder.firstName(), expectedOrder.dish(), expectedOrder.tableNumber(), expectedOrder.bill());
 
 
         assert(expectedOrder.equals(returnedOrder));
         verify(fetcherMock, times(1)).getCustomerByName(anyString());
-        verify(fetcherMock, times(1)).submitOrder(expectedOrder);
+        verify(fetcherMock, times(1)).submitOrder(expectedOrder.firstName(), expectedOrder.dish(), expectedOrder.tableNumber(), expectedOrder.bill());
 
     }
 

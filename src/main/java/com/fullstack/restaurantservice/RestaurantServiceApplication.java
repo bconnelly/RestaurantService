@@ -5,7 +5,6 @@ import com.fullstack.restaurantservice.DataEntities.OrderRecord;
 import com.fullstack.restaurantservice.DataEntities.TableRecord;
 import com.fullstack.restaurantservice.DomainLogic.RestaurantLogic;
 import com.fullstack.restaurantservice.Utilities.EntityNotFoundException;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -36,17 +35,19 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     @GetMapping("/")
     public String defaultLandingPage(){
         log.debug("default landing page requested");
-        return "default page";
+        return "default landing page";
     }
 
     @PostMapping("/seatCustomer")
-    public CustomerRecord seatCustomer(@Valid @RequestBody CustomerRecord customer) throws EntityNotFoundException {
+    public CustomerRecord seatCustomer(@RequestParam("firstName") String firstName,
+                                       @RequestParam("address") String address,
+                                       @RequestParam("cash") Float cash) throws EntityNotFoundException {
         log.debug("seatCustomer requested");
-        return restaurantLogic.seatCustomer(customer);
+        return restaurantLogic.seatCustomer(firstName, address, cash);
     }
 
     @PostMapping("/seatGroup")
-    public List<CustomerRecord> seatGroup(@Valid @RequestBody List<CustomerRecord> customers) throws EntityNotFoundException {
+    public List<CustomerRecord> seatGroup(@RequestBody List<CustomerRecord> customers) throws EntityNotFoundException {
         log.debug("seatGroup requested");
         return restaurantLogic.seatGroup(customers);
     }
@@ -58,9 +59,12 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     }
 
     @PostMapping("/submitOrder")
-    public OrderRecord submitOrder(@Valid @RequestBody OrderRecord order) throws EntityNotFoundException {
+    public OrderRecord submitOrder(@RequestParam("firstName")String firstName,
+                                   @RequestParam("dish")String dish,
+                                   @RequestParam("tableNumber")Integer tableNumber,
+                                   @RequestParam("bill")Float bill) throws EntityNotFoundException {
         log.debug("submitOrder requested");
-        return restaurantLogic.submitOrder(order);
+        return restaurantLogic.submitOrder(firstName, dish, tableNumber, bill);
     }
 
     @PostMapping("/serveOrder")
