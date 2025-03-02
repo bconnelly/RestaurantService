@@ -1,7 +1,7 @@
 pipeline{
     agent{
         docker{
-            image 'bryan949/poc-agent:0.1'
+            image 'bryan949/poc-agent:0.2.1'
             args '-v /root/.m2:/root/.m2 \
                   -v /root/jenkins/restaurant-resources/:/root/jenkins/restaurant-resources/ \
                   -v /var/run/docker.sock:/var/run/docker.sock \
@@ -15,7 +15,7 @@ pipeline{
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
     }
     stages{
-        stage('maven build and test, docker build and push'){
+        stage('maven build and test'){
             steps{
                 sh '''
                     mvn verify
@@ -24,7 +24,7 @@ pipeline{
 
             }
         }
-        stage('build docker images'){
+        stage('build and push docker image'){
             steps{
                 unstash 'restaurant-repo'
                 sh '''
