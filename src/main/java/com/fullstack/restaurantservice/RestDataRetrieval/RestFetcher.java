@@ -79,7 +79,12 @@ public class RestFetcher {
         return template.getForObject(urlTemplate, Boolean.class);
     }
 
-    public CustomerRecord seatCustomer(String firstName, String address, Float cash, Integer tableNumber) {
+    public CustomerRecord seatCustomer(CustomerRecord customer) {
+        String firstName = customer.firstName();
+        String address = customer.address();
+        Float cash = customer.cash();
+        Integer tableNumber = customer.tableNumber();
+
         if(customersHost == null || customersSeatUrl == null) throw new RuntimeException("failed to load environment");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -125,17 +130,17 @@ public class RestFetcher {
         return template.postForObject(urlTemplate, request, CustomerRecord.class);
     }
 
-    public OrderRecord submitOrder(String firstName, String dish, Integer tableNumber, Float bill){
+    public OrderRecord submitOrder(OrderRecord order){
         if(ordersHost == null || orderSubmitUrl == null) throw new RuntimeException("failed to load environment");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(headers);
 
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(ordersHost + orderSubmitUrl)
-                .queryParam("firstName", firstName)
-                .queryParam("dish", dish)
-                .queryParam("tableNumber", tableNumber)
-                .queryParam("bill", bill).toUriString();
+                .queryParam("firstName", order.firstName())
+                .queryParam("dish", order.dish())
+                .queryParam("tableNumber", order.tableNumber())
+                .queryParam("bill", order.bill()).toUriString();
 
         log.debug("calling orders /insertOrder");
         return template.postForObject(urlTemplate, request, OrderRecord.class);

@@ -38,43 +38,39 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
         return "default landing page";
     }
 
-    @PostMapping("/seatCustomer")
-    public CustomerRecord seatCustomer(@RequestParam("firstName") String firstName,
-                                       @RequestParam("address") String address,
-                                       @RequestParam("cash") Float cash) throws EntityNotFoundException {
+    @PostMapping("/customer")
+    public CustomerRecord seatCustomer(@RequestBody CustomerRecord customer) throws EntityNotFoundException {
         log.debug("seatCustomer requested");
-        return restaurantLogic.seatCustomer(firstName, address, cash);
+        return restaurantLogic.seatCustomer(customer);
     }
 
-    @PostMapping("/seatGroup")
+    @DeleteMapping("/customer")
+    public CustomerRecord bootCustomer(@RequestParam("firstName") String firstName) throws EntityNotFoundException {
+        log.debug("bootCustomer requested");
+        return restaurantLogic.bootCustomer(firstName);
+    }
+
+    @PostMapping("/customer/group")
     public List<CustomerRecord> seatGroup(@RequestBody List<CustomerRecord> customers) throws EntityNotFoundException {
         log.debug("seatGroup requested");
         return restaurantLogic.seatGroup(customers);
     }
 
-    @GetMapping("/getOpenTables")
+    @GetMapping("/tables/open")
     public List<TableRecord> getOpenTables() throws EntityNotFoundException {
         log.debug("getOpenTables requested");
         return restaurantLogic.getOpenTables();
     }
 
-    @PostMapping("/submitOrder")
-    public OrderRecord submitOrder(@RequestParam("firstName")String firstName,
-                                   @RequestParam("dish")String dish,
-                                   @RequestParam("tableNumber")Integer tableNumber,
-                                   @RequestParam("bill")Float bill) throws EntityNotFoundException {
+    @PostMapping("/order/submit")
+    public OrderRecord submitOrder(OrderRecord order) throws EntityNotFoundException {
         log.debug("submitOrder requested");
-        return restaurantLogic.submitOrder(firstName, dish, tableNumber, bill);
+        return restaurantLogic.submitOrder(order);
     }
 
-    @PostMapping("/serveOrder")
+    @PostMapping("/order/serve")
     public void serveOrder(String firstName, int tableNumber){
         restaurantLogic.serveOrder(firstName, tableNumber);
     }
 
-    @PostMapping("/bootCustomer")
-    public CustomerRecord bootCustomer(@RequestParam("firstName") String firstName) throws EntityNotFoundException {
-        log.debug("bootCustomer requested");
-        return restaurantLogic.bootCustomer(firstName);
-    }
 }

@@ -95,7 +95,7 @@ class RestFetcherTest {
 
         when(template.postForObject(anyString(), eq(request), eq(CustomerRecord.class))).thenReturn(newCustomerRecord);
 
-        CustomerRecord returnedCustomer = restFetcher.seatCustomer(newCustomerRecord.firstName(), newCustomerRecord.address(), newCustomerRecord.cash(), newCustomerRecord.tableNumber());
+        CustomerRecord returnedCustomer = restFetcher.seatCustomer(newCustomerRecord);
 
         verify(template, times(1)).postForObject(anyString(), eq(request), eq(CustomerRecord.class));
         assertEquals(newCustomerRecord, returnedCustomer);
@@ -113,7 +113,7 @@ class RestFetcherTest {
 
         when(template.postForObject(anyString(), eq(request), eq(OrderRecord.class))).thenReturn(newOrderRecord);
 
-        OrderRecord returnedOrder = restFetcher.submitOrder(newOrderRecord.firstName(), newOrderRecord.dish(), newOrderRecord.tableNumber(), newOrderRecord.bill());
+        OrderRecord returnedOrder = restFetcher.submitOrder(newOrderRecord);
 
         verify(template, times(1)).postForObject(anyString(), eq(request), eq(OrderRecord.class));
         assertEquals(newOrderRecord, returnedOrder);
