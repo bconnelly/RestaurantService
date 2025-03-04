@@ -28,23 +28,23 @@ public class RestFetcher {
     private String ordersHost;
     @Value("${tables.host.url}")
     private String tablesHost;
-    @Value("${customers.get-all.endpoint}")
+    @Value("${customer.get-all.endpoint}")
     private String customerGetAllUrl;
-    @Value("${customers.get-by-name.endpoint}")
+    @Value("${customer.get-by-name.endpoint}")
     private String customerGetByNameUrl;
-    @Value("${customers.exists.endpoint}")
+    @Value("${customer.exists.endpoint}")
     private String customerExistsUrl;
-    @Value("${customers.seat.endpoint}")
+    @Value("${customer.seat.endpoint}")
     private String customersSeatUrl;
-    @Value("${customers.seat-group.endpoint}")
+    @Value("${customer.seat-group.endpoint}")
     private String customersSeatGroupUrl;
-    @Value("${customers.boot.endpoint}")
+    @Value("${customer.boot.endpoint}")
     private String customersBootUrl;
-    @Value("${orders.submit.endpoint}")
+    @Value("${order.submit.endpoint}")
     private String orderSubmitUrl;
-    @Value("${orders.serve.endpoint}")
+    @Value("${order.serve.endpoint}")
     private String serveOrder;
-    @Value("${tables.get-all.endpoint}")
+    @Value("${table.get-all.endpoint}")
     private String tableGetAllUrl;
 
     public List<CustomerRecord> getAllCustomers() throws EntityNotFoundException {

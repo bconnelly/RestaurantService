@@ -56,7 +56,7 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
         return restaurantLogic.seatGroup(customers);
     }
 
-    @GetMapping("/tables/open")
+    @GetMapping("/table/open")
     public List<TableRecord> getOpenTables() throws EntityNotFoundException {
         log.debug("getOpenTables requested");
         return restaurantLogic.getOpenTables();
