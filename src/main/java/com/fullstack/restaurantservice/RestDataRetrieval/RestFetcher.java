@@ -32,6 +32,8 @@ public class RestFetcher {
     private String customerGetAllUrl;
     @Value("${customer.get-by-name.endpoint}")
     private String customerGetByNameUrl;
+    @Value("${customer.get-by-table.endpoint}")
+    private String customerGetByTableUrl;
     @Value("${customer.exists.endpoint}")
     private String customerExistsUrl;
     @Value("${customer.seat.endpoint}")
