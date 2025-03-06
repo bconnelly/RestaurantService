@@ -28,8 +28,13 @@ public class RestaurantLogic {
         if(openTables.isEmpty()) {
             throw new EntityNotFoundException("no empty tables");
         }
-        log.info("Seating customer: {}", customer.firstName());
-        return restFetcher.seatCustomer(customer);
+
+        CustomerRecord newCustomer = new CustomerRecord(
+                customer.firstName(), customer.address(), customer.cash(), openTables.getFirst().tableNumber()
+        );
+
+        log.info("Seating customer: {}", newCustomer.firstName());
+        return restFetcher.seatCustomer(newCustomer);
     }
 
     public List<CustomerRecord> seatGroup(List<CustomerRecord> customers) throws EntityNotFoundException {
@@ -84,9 +89,9 @@ public class RestaurantLogic {
         return restFetcher.submitOrder(order);
     }
 
-    public CustomerRecord bootCustomer(String firstName) throws EntityNotFoundException {
+    public void bootCustomer(String firstName) throws EntityNotFoundException {
         log.info("Customer " + firstName + " is leaving");
-        return restFetcher.bootCustomer(firstName);
+        restFetcher.bootCustomer(firstName);
     }
 
     public OrderRecord serveOrder(String firstName, int tableNumber) {

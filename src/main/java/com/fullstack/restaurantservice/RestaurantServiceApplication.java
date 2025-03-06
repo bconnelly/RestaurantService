@@ -45,9 +45,9 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     }
 
     @DeleteMapping("/customer")
-    public CustomerRecord bootCustomer(@RequestParam("firstName") String firstName) throws EntityNotFoundException {
+    public void bootCustomer(@RequestParam("firstName") String firstName) throws EntityNotFoundException {
         log.debug("bootCustomer requested");
-        return restaurantLogic.bootCustomer(firstName);
+        restaurantLogic.bootCustomer(firstName);
     }
 
     @PostMapping("/customer/group")
@@ -63,13 +63,14 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
     }
 
     @PostMapping("/order/submit")
-    public OrderRecord submitOrder(OrderRecord order) throws EntityNotFoundException {
+    public OrderRecord submitOrder(@RequestBody OrderRecord order) throws EntityNotFoundException {
         log.debug("submitOrder requested");
         return restaurantLogic.submitOrder(order);
     }
 
     @PostMapping("/order/serve")
-    public void serveOrder(String firstName, int tableNumber){
+    public void serveOrder(@RequestParam String firstName, int tableNumber){
+        log.debug("serveOrder requested");
         restaurantLogic.serveOrder(firstName, tableNumber);
     }
 

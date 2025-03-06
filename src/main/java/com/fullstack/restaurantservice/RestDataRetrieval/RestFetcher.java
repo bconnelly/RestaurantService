@@ -54,6 +54,7 @@ public class RestFetcher {
 
         log.debug("calling customers /getAllCustomers");
         CustomerRecord[] customerRecords = template.getForObject(urlTemplate, CustomerRecord[].class);
+
         if(customerRecords != null) return new ArrayList<>(Arrays.asList(customerRecords));
         else throw new EntityNotFoundException("customer records could not be retrieved");
     }
@@ -61,45 +62,35 @@ public class RestFetcher {
     public CustomerRecord getCustomerByName(String firstName) throws EntityNotFoundException {
         if(customersHost == null || customerGetByNameUrl == null) throw new RuntimeException("failed to load environment");
 
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customerGetByNameUrl)
-                .queryParam("firstName", firstName).toUriString();
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customerGetByNameUrl + "/" + firstName)
+                .toUriString();
 
         log.debug("calling customers /getCustomerByFirstName");
         CustomerRecord customerRecord = template.getForObject(urlTemplate, CustomerRecord.class);
+
         if(customerRecord != null) return customerRecord;
         else throw new EntityNotFoundException("customer not found");
     }
 
     public Boolean customerExists(String firstName) {
         if(customersHost == null || customerExistsUrl == null)  throw new RuntimeException("failed to load environment");
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customerExistsUrl)
-                .queryParam("firstName", firstName).toUriString();
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customerExistsUrl + "/" + firstName)
+                .toUriString();
 
         log.debug("calling customers /customerExists");
         return template.getForObject(urlTemplate, Boolean.class);
     }
 
     public CustomerRecord seatCustomer(CustomerRecord customer) {
-        String firstName = customer.firstName();
-        String address = customer.address();
-        Float cash = customer.cash();
-        Integer tableNumber = customer.tableNumber();
-
         if(customersHost == null || customersSeatUrl == null) throw new RuntimeException("failed to load environment");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        CustomerRecord customerRecord = CustomerRecord.builder()
-                .firstName(firstName)
-                .address(address)
-                .cash(cash)
-                .tableNumber(tableNumber)
-                .build();
-
         String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customersSeatUrl).toUriString();
 
         log.debug("calling customers /insertCustomer");
-        HttpEntity<CustomerRecord> request = new HttpEntity<>(customerRecord, headers);
+        HttpEntity<CustomerRecord> request = new HttpEntity<>(customer, headers);
+
         return template.postForObject(urlTemplate, request, CustomerRecord.class);
     }
 
@@ -116,31 +107,27 @@ public class RestFetcher {
         return template.postForObject(urlTemplate, request, List.class);
     }
 
-    public CustomerRecord bootCustomer(String misbehavingCustomer) {
+    public void bootCustomer(String misbehavingCustomer) {
         if(customersHost == null || customersBootUrl == null) throw new RuntimeException("failed to load environment");
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> request = new HttpEntity<>(headers);
+        HttpEntity<String> request = new HttpEntity<>(misbehavingCustomer, headers);
 
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl(customersHost + customersBootUrl)
-                .queryParam("firstName", misbehavingCustomer).toUriString();
+        String urlTemplate = UriComponentsBuilder
+                .fromHttpUrl(customersHost + customersBootUrl + "/" + misbehavingCustomer).toUriString();
 
         log.debug("calling customers /bootCustomer");
-        return template.postForObject(urlTemplate, request, CustomerRecord.class);
+        template.delete(urlTemplate, request);
     }
 
     public OrderRecord submitOrder(OrderRecord order){
         if(ordersHost == null || orderSubmitUrl == null) throw new RuntimeException("failed to load environment");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> request = new HttpEntity<>(headers);
+        HttpEntity<OrderRecord> request = new HttpEntity<>(order, headers);
 
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl(ordersHost + orderSubmitUrl)
-                .queryParam("firstName", order.firstName())
-                .queryParam("dish", order.dish())
-                .queryParam("tableNumber", order.tableNumber())
-                .queryParam("bill", order.bill()).toUriString();
+        String urlTemplate = UriComponentsBuilder.fromHttpUrl(ordersHost + orderSubmitUrl).toUriString();
 
         log.debug("calling orders /insertOrder");
         return template.postForObject(urlTemplate, request, OrderRecord.class);
@@ -168,7 +155,7 @@ public class RestFetcher {
                 .queryParam("firstName", firstName)
                 .queryParam("tableNumber", tableNumber).toUriString();
 
-        log.debug("calling orders /serveOrder");
+        log.debug("calling orders /order/serve");
         return template.postForObject(urlTemplate, request, OrderRecord.class);
     }
 }

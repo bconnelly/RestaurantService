@@ -42,7 +42,7 @@ class RestFetcherTest {
     }
 
     @Test
-    void getAllCustomers() throws EntityNotFoundException {
+    void getAllCustomersTest() throws EntityNotFoundException {
         CustomerRecord[] expectedResponse = {CustomerRecord.builder().firstName("test person")
                         .address("test address").cash(12.34f).tableNumber(1).build(),
                 CustomerRecord.builder().firstName("another person")
@@ -58,7 +58,7 @@ class RestFetcherTest {
     }
 
     @Test
-    void getCustomerByName() throws EntityNotFoundException {
+    void getCustomerByNameTest() throws EntityNotFoundException {
         CustomerRecord expectedResponse = CustomerRecord.builder().firstName("test person")
                 .address("test address").cash(9.87f).tableNumber(1).build();
 
@@ -71,7 +71,7 @@ class RestFetcherTest {
     }
 
     @Test
-    void customerExists() {
+    void customerExistsTest() {
         Boolean expectedResponse = true;
 
         when(template.getForObject(anyString(), eq(Boolean.class))).thenReturn(expectedResponse);
@@ -83,7 +83,7 @@ class RestFetcherTest {
     }
 
     @Test
-    void seatCustomer() {
+    void seatCustomerTest() {
         CustomerRecord newCustomerRecord = CustomerRecord.builder()
                 .firstName("test person").address("test address")
                 .cash(54.32f).tableNumber(1).build();
@@ -102,14 +102,14 @@ class RestFetcherTest {
     }
 
     @Test
-    void submitOrder() {
+    void submitOrderTest() {
         OrderRecord newOrderRecord = OrderRecord.builder().firstName("test person")
                 .dish("test dish").bill(1.23f).tableNumber(1).build();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<OrderRecord> request = new HttpEntity<>(headers);
+        HttpEntity<OrderRecord> request = new HttpEntity<>(newOrderRecord, headers);
 
         when(template.postForObject(anyString(), eq(request), eq(OrderRecord.class))).thenReturn(newOrderRecord);
 
@@ -120,7 +120,7 @@ class RestFetcherTest {
     }
 
     @Test
-    void getAllTables() throws EntityNotFoundException {
+    void getAllTablesTest() throws EntityNotFoundException {
         TableRecord[] expectedTables = {TableRecord.builder().tableNumber(1).capacity(2).build(),
                                     TableRecord.builder().tableNumber(2).capacity(2).build(),
                                     TableRecord.builder().tableNumber(3).capacity(4).build()};
@@ -134,20 +134,18 @@ class RestFetcherTest {
     }
 
     @Test
-    void bootCustomer() {
-        CustomerRecord misbehavingCustomer = CustomerRecord.builder()
-                .firstName("alice").address("123 whatever st").cash(32.10f).tableNumber(1).build();
+    void bootCustomerTest() {
+        String misbehavingCustomer = "alice";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> request = new HttpEntity<>(headers);
+        HttpEntity<String> request = new HttpEntity<>(misbehavingCustomer, headers);
 
-        when(template.postForObject(anyString(), eq(request), eq(CustomerRecord.class))).thenReturn(misbehavingCustomer);
+        doNothing().when(template).delete(anyString(), eq(request), eq(CustomerRecord.class));
 
-        CustomerRecord returnedCustomer = restFetcher.bootCustomer("alice");
+        restFetcher.bootCustomer("alice");
 
-        verify(template, times(1)).postForObject(anyString(), eq(request), eq(CustomerRecord.class));
-        assertEquals(misbehavingCustomer, returnedCustomer);
+        verify(template, times(1)).delete(anyString(), eq(request));
     }
 
     @Test

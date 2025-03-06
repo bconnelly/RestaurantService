@@ -40,22 +40,25 @@ public class RestaurantLogicTest {
     void seatCustomer() throws EntityNotFoundException {
 
         CustomerRecord expectedSeatedCustomer = CustomerRecord.builder()
-                .firstName("dick").address("test address4").cash(9.87f).build();
+                .firstName("dick").address("test address4").cash(9.87f)
+                .tableNumber(3).build();
+        CustomerRecord inCustomer = CustomerRecord.builder()
+                .firstName("dick").address("test address 4").cash(9.87f).build();
 
-        when(fetcherMock.seatCustomer(expectedSeatedCustomer)).thenReturn(expectedSeatedCustomer);
+        when(fetcherMock.seatCustomer(any(CustomerRecord.class))).thenReturn(expectedSeatedCustomer);
         when(fetcherMock.getAllCustomers()).thenReturn(expectedAllCustomers);
         when(fetcherMock.getAllTables()).thenReturn(expectedAllTables);
 
-        CustomerRecord returnedCustomer = restaurantLogic.seatCustomer(expectedSeatedCustomer);
+        CustomerRecord returnedCustomer = restaurantLogic.seatCustomer(inCustomer);
 
         assert(expectedSeatedCustomer.equals(returnedCustomer));
         verify(fetcherMock, times(1)).getAllTables();
         verify(fetcherMock, times(1)).getAllCustomers();
-        verify(fetcherMock, times(1)).seatCustomer(returnedCustomer);
+        verify(fetcherMock, times(1)).seatCustomer(any(CustomerRecord.class));
     }
 
     @Test
-    void seatGroup() throws EntityNotFoundException {
+    void seatGroupTest() throws EntityNotFoundException {
 
         CustomerRecord expectedCustomer1 = CustomerRecord.builder()
                 .firstName("abc").address("abc").cash(10.10f).tableNumber(0).build();
@@ -116,14 +119,10 @@ public class RestaurantLogicTest {
     @Test
     void bootCustomerTest() throws EntityNotFoundException {
 
-        CustomerRecord expected =
-                new CustomerRecord("alice", "test address1", 1.00f, 1);
+        doNothing().when(fetcherMock).bootCustomer("alice");
 
-        when(fetcherMock.bootCustomer("alice")).thenReturn(expected);
+        restaurantLogic.bootCustomer("alice");
 
-        CustomerRecord ret = restaurantLogic.bootCustomer("alice");
-
-        assert(ret.equals(expected));
         verify(fetcherMock, times(1)).bootCustomer("alice");
     }
 

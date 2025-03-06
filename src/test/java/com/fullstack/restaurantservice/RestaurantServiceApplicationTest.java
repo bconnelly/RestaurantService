@@ -26,18 +26,20 @@ class RestaurantServiceApplicationTest {
     private RestaurantLogic restaurantLogicMock;
 
     @Test
-    void seatCustomer() throws EntityNotFoundException {
-        CustomerRecord expected = CustomerRecord.builder().firstName("alice").address("my address").cash(15.99f).build();
-        when(restaurantLogicMock.seatCustomer(expected)).thenReturn(expected);
+    void seatCustomerTest() throws EntityNotFoundException {
+        CustomerRecord expected = CustomerRecord.builder().firstName("alice").address("my address").cash(15.99f)
+                .tableNumber(1).build();
+        CustomerRecord inCustomer = CustomerRecord.builder().firstName("alice").address("my address").cash(15.99f).build();
+        when(restaurantLogicMock.seatCustomer(inCustomer)).thenReturn(expected);
 
-        CustomerRecord response = application.seatCustomer(expected);
+        CustomerRecord response = application.seatCustomer(inCustomer);
 
         assertEquals(expected, response);
-        verify(restaurantLogicMock, times(1)).seatCustomer(expected);
+        verify(restaurantLogicMock, times(1)).seatCustomer(inCustomer);
     }
 
     @Test
-    void seatGroup() throws EntityNotFoundException {
+    void seatGroupTest() throws EntityNotFoundException {
         List<CustomerRecord> expected = new ArrayList<>();
         expected.add(CustomerRecord.builder().firstName("alice").address("my address").cash(15.99f).build());
         expected.add(CustomerRecord.builder().firstName("bob").address("my address").cash(15.99f).build());
@@ -50,7 +52,7 @@ class RestaurantServiceApplicationTest {
     }
 
     @Test
-    void getOpenTables() throws EntityNotFoundException {
+    void getOpenTablesTest() throws EntityNotFoundException {
         List<TableRecord> expected = new ArrayList<>();
         expected.add(TableRecord.builder().tableNumber(1).capacity(4).build());
         expected.add(TableRecord.builder().tableNumber(2).capacity(5).build());
@@ -63,7 +65,7 @@ class RestaurantServiceApplicationTest {
     }
 
     @Test
-    void submitOrder() throws EntityNotFoundException {
+    void submitOrderTest() throws EntityNotFoundException {
         OrderRecord expected = OrderRecord.builder().firstName("alice").dish("taco").bill(11.01f).tableNumber(1).build();
         when(restaurantLogicMock.submitOrder(expected)).thenReturn(expected);
 
@@ -83,9 +85,8 @@ class RestaurantServiceApplicationTest {
     }
 
     @Test
-    void bootCustomer() throws EntityNotFoundException {
-        CustomerRecord expected = CustomerRecord.builder().firstName("alice").address("fake st").cash(100.00f).tableNumber(1).build();
-        when(restaurantLogicMock.bootCustomer("alice")).thenReturn(expected);
+    void bootCustomerTest() throws EntityNotFoundException {
+        doNothing().when(restaurantLogicMock).bootCustomer("alice");
 
         application.bootCustomer("alice");
 
