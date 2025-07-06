@@ -18,22 +18,27 @@ pipeline{
         stage('Maven build and test'){
             steps{
                 script{
-                    env.GIT_SHA = sh(script: '''
-                                                git clone ${ORDERS_REPO}
-                                                cd OrdersService
-                                                git rev-parse master
-                                             ''', returnStdout: true).trim()
-                    env.MASTER_COMMIT = sh(script: 'git rev-parse --short HEAD')
-                    env.PREV_IMAGE = sh(script: '''
-                                                   docker pull bryan949/poc-customers:latest
-                                                   docker inspect --format='{{index .RepoDigests 0}}' bryan949/poc-customers:latest
-                                                ''', returnStdout: true).trim()
-                }
-                sh '''
-                    mvn verify
-                '''
-                stash name: 'restaurant-repo', useDefaultExcludes: false
+                    def gitOutput = sh(script: '''
+                                                set -e
+                                                rm -rf RestaurantService || true
+                                                git clone ${RESTAURANT_REPO}
+                                                cd RestaurantService
+                                                GIT_SHA=$(git rev-parse --short HEAD)
+                                                MASTER_COMMIT=$(git rev-parse master)
+                                                echo "GIT_SHA=${GIT_SHA}"
+                                                echo "MASTER_COMMIT=${MASTER_COMMIT}"
+                                               ''', returnStdout: true).trim()
+                    env.GIT_SHA = (gitOutput =~ /GIT_SHA=([a-f0-9]+)/)[0][1]
+                    env.MASTER_COMMIT = (gitOutput =~ /MASTER_COMMIT=([a-f0-9]+)/)[0][1]
 
+                    echo "MASTER_COMMIT: ${env.MASTER_COMMIT}"
+                    echo "GIT_SHA: ${env.GIT_SHA}"
+
+                    env.PREV_IMAGE = sh(script: '''
+                                                docker pull bryan949/poc-customers:latest >> /dev/null
+                                                docker inspect --format='{{index .RepoDigests 0}}' bryan949/poc-customers:latest
+                                                ''', returnStdout: true).trim()
+                    echo "PREV_IMAGE: ${env.PREV_IMAGE}"
             }
         }
         stage('Build and push docker image'){
