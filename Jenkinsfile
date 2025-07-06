@@ -160,6 +160,9 @@ pipeline{
                 docker pull ${PREV_IMAGE}
                 docker tag ${PREV_IMAGE} bryan949/poc-restaurant:latest
                 docker push bryan949/poc-restaurant:latest
+
+                POD=$(kubectl get pod | grep restaurant | cut -d ' ' -f 1)
+                kubectl delete pod $POD
                '''
         }
         always{
