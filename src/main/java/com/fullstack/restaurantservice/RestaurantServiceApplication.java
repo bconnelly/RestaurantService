@@ -58,8 +58,7 @@ public class RestaurantServiceApplication extends SpringBootServletInitializer {
 
     @GetMapping("/table/open")
     public List<TableRecord> getOpenTables() throws Exception {
-        log.debug("getOpenTables requested");
-        return restaurantLogic.getOpenTables();
+        throw new Exception("this is an exception");
     }
 
     @PostMapping("/order/submit")
