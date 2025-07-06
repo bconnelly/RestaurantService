@@ -40,6 +40,10 @@ pipeline{
                                                 ''', returnStdout: true).trim()
                     echo "PREV_IMAGE: ${env.PREV_IMAGE}"
                 }
+                sh '''
+                    mvn verify
+                   '''
+                stash name: 'restaurant-repo', useDefaultExcludes: false
             }
         }
         stage('Build and push docker image'){
