@@ -15,8 +15,20 @@ pipeline{
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
     }
     stages{
-        stage('maven build and test'){
+        stage('Maven build and test'){
             steps{
+                script{
+                    env.GIT_SHA = sh(script: '''
+                                                git clone ${ORDERS_REPO}
+                                                cd OrdersService
+                                                git rev-parse master
+                                             ''', returnStdout: true).trim()
+                    env.MASTER_COMMIT = sh(script: 'git rev-parse --short HEAD')
+                    env.PREV_IMAGE = sh(script: '''
+                                                   docker pull bryan949/poc-customers:latest
+                                                   docker inspect --format='{{index .RepoDigests 0}}' bryan949/poc-customers:latest
+                                                ''', returnStdout: true).trim()
+                }
                 sh '''
                     mvn verify
                 '''
@@ -24,7 +36,7 @@ pipeline{
 
             }
         }
-        stage('build and push docker image'){
+        stage('Build and push docker image'){
             steps{
                 unstash 'restaurant-repo'
                 sh '''
@@ -32,7 +44,9 @@ pipeline{
                     cp /root/jenkins/restaurant-resources/context.xml .
                     cp /root/jenkins/restaurant-resources/server.xml .
 
-                    docker build -t bryan949/poc-restaurant .
+                    docker build -t bryan949/poc-restaurant:${GIT_SHA} .
+                    docker tag bryan949/poc-restaurant:${GIT_SHA} bryan949/poc-restaurant:latest
+                    docker push bryan949/poc-restaurant:${GIT_SHA}
                     docker push bryan949/poc-restaurant:latest
 
                     rm tomcat-users.xml
@@ -41,7 +55,7 @@ pipeline{
                 '''
             }
         }
-        stage('configure cluster connection'){
+        stage('Configure cluster connection'){
             steps{
     	        sh '''
 	                kops export kubecfg --admin --name poc.k8s.local
@@ -50,7 +64,7 @@ pipeline{
 	            '''
             }
         }
-        stage('deploy services to cluster - rc namespace'){
+        stage('Deploy services to cluster - rc namespace'){
             steps{
                 sh '''
                     git clone https://github.com/bconnelly/Restaurant-k8s-components.git
@@ -82,7 +96,8 @@ pipeline{
                     exit_status=$?
                     if [ "${exit_status}" -ne 0 ];
                     then
-                        echo "exit ${exit_status}"
+                        echo "Tests failed. Exit status: ${exit_status}"
+                        exit ${exit_status}
                     fi
                 '''
 
@@ -124,15 +139,10 @@ pipeline{
             withCredentials([gitUsernamePassword(credentialsId: 'GITHUB_USERPASS', gitToolName: 'Default')]) {
                 unstash 'restaurant-repo'
                 sh '''
-                    git checkout rc
+                    echo "Reverting git master branch to previous commit ${MASTER_COMMIT}"
                     git checkout master
-                    git rev-list --left-right master...rc | while read line
-                    do
-                        COMMIT=$(echo $line | sed 's/[^0-9a-f]*//g')
-                        git revert $COMMIT --no-edit
-                    done
-                    git merge rc
-                    git push origin master
+                    git reset --hard ${MASTER_COMMIT}
+                    git push origin master --force
                 '''
             }
         }
@@ -147,8 +157,9 @@ pipeline{
                     disableDeferredWipeout: true)
 
             sh '''
-                docker rmi bryan949/poc-restaurant
-                docker image prune
+                docker rmi bryan949/poc-restaurant:${GIT_SHA} || true
+                docker rmi bryan949/poc-restaurant:latest || true
+                docker image prune || true
             '''
         }
     }
