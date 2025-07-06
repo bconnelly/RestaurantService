@@ -155,6 +155,12 @@ pipeline{
                     git push origin master --force
                 '''
             }
+            sh '''
+                echo "Rolling back Docker image to previous digest"
+                docker pull ${PREV_IMAGE}
+                docker tag ${PREV_IMAGE} bryan949/poc-customers:latest
+                docker push bryan949/poc-customers:latest
+               '''
         }
         always{
             cleanWs(cleanWhenAborted: true,
