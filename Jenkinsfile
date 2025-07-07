@@ -79,7 +79,7 @@ pipeline{
                 sh '''
                     git clone https://github.com/bconnelly/Restaurant-k8s-components.git
 
-                    find Restaurant-k8s-components/restaurant -name '*.yaml' -exec yq -i '.metadata.namespace = "rc"' {} \;
+                    find Restaurant-k8s-components/restaurant -type f -path ./Restaurant-k8s-components/restaurant -prune -o -name *.yaml -print | while read line; do yq -i '.metadata.namespace = "rc"' $line > /dev/null; done
                     yq -i '.metadata.namespace = "rc"' /root/jenkins/restaurant-resources/poc-secrets.yaml
                     yq -i '.metadata.namespace = "rc"' Restaurant-k8s-components/poc-config.yaml
                     yq -i '.metadata.namespace = "rc"' Restaurant-k8s-components/mysql-external-service.yaml
@@ -124,7 +124,7 @@ pipeline{
                 unstash 'k8s-components'
 
                 sh '''
-                    find Restaurant-k8s-components/restaurant -name '*.yaml' -exec yq -i '.metadata.namespace = "prod"' {} \;
+                    find Restaurant-k8s-components/restaurant -type f -path ./Restaurant-k8s-components/restaurant -prune -o -name *.yaml -print | while read line; do yq -i '.metadata.namespace = "prod"' $line > /dev/null; done
                     yq -i '.metadata.namespace = "prod"' /root/jenkins/restaurant-resources/poc-secrets.yaml
                     yq -i '.metadata.namespace = "prod"' Restaurant-k8s-components/poc-config.yaml
                     yq -i '.metadata.namespace = "prod"' Restaurant-k8s-components/mysql-external-service.yaml
