@@ -25,6 +25,8 @@ COPY server.xml /opt/tomcat/latest/conf
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+USER tomcat
+
 HEALTHCHECK --interval=30m --timeout=3s CMD curl --fail http://localhost:80 || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]
