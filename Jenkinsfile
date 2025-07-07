@@ -54,8 +54,8 @@ pipeline{
                             cp "$TOMCAT_CONTEXT_XML" ./context.xml
 
                             docker build \
-                             --build-arg TOMCAT_USER=${TOMCAT_USER} \
-                             --build-arg TOMCAT_PASS=${TOMCAT_PASS} \
+                             --build-arg TOMCAT_USER=$TOMCAT_USER \
+                             --build-arg TOMCAT_PASS=$TOMCAT_PASS \
                              -t bryan949/poc-restaurant:${GIT_SHA} .
                             docker tag bryan949/poc-restaurant:${GIT_SHA} bryan949/poc-restaurant:latest
                             docker push bryan949/poc-restaurant:${GIT_SHA}
@@ -95,7 +95,7 @@ pipeline{
                     sleep 3
                 '''
                 stash includes: 'Restaurant-k8s-components/restaurant/', name: 'k8s-components'
-                stash includes: 'Restaurant-k8s-components/tests.py,Restaurant-k8s-components/tests.py', name: 'tests'
+                stash includes: 'Restaurant-k8s-components/tests.py', name: 'tests'
             }
         }
         stage('Sanity tests'){
@@ -132,6 +132,7 @@ pipeline{
                     kubectl config set-context --current --namespace prod
                     kubectl apply -f /root/jenkins/restaurant-resources/poc-secrets.yaml
                     kubectl apply -f Restaurant-k8s-components/restaurant/
+                    kubectl apply -f Restaurant-k8s-components/{poc-config.yaml,mysql-external-service.yaml}
                     kubectl rollout restart deployment restaurant-deployment
 
                     if [ -z "$(kops validate cluster | grep ".k8s.local is ready")" ]; then echo "PROD FAILURE"; fi
