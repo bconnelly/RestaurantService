@@ -11,12 +11,11 @@ RUN wget https://archive.apache.org/dist/tomcat/tomcat-11/v$TOMCAT_VERSION/bin/a
     tar -xf apache-tomcat-$TOMCAT_VERSION.tar.gz -C /opt/tomcat && \
     rm apache-tomcat-$TOMCAT_VERSION.tar.gz
 
+RUN ln -s /opt/tomcat/apache-tomcat-$TOMCAT_VERSION /opt/tomcat/latest
+
 RUN chown -R tomcat: /opt/tomcat && \
     chmod -R u+rwX /opt/tomcat && \
-    find /opt/tomcat -type d -exec chmod 755 {} \; && \
-    find /opt/tomcat -type f -exec chmod 644 {} \;
-
-RUN ln -s /opt/tomcat/apache-tomcat-$TOMCAT_VERSION /opt/tomcat/latest
+    find /opt/tomcat -exec chmod 755 {} \;
 
 COPY RestaurantService.war /opt/tomcat/latest/webapps
 COPY context.xml /opt/tomcat/latest/webapps/manager/META-INF
