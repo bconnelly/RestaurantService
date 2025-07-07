@@ -130,9 +130,12 @@ pipeline{
                     yq -i '.metadata.namespace = "prod"' Restaurant-k8s-components/mysql-external-service.yaml
 
                     kubectl config set-context --current --namespace prod
+
                     kubectl apply -f /root/jenkins/restaurant-resources/poc-secrets.yaml
                     kubectl apply -f Restaurant-k8s-components/restaurant/
-                    kubectl apply -f Restaurant-k8s-components/{poc-config.yaml,mysql-external-service.yaml}
+                    kubectl apply -f Restaurant-k8s-components/poc-config.yaml
+                    kubectl apply -f Restaurant-k8s-components/mysql-external-service.yaml
+
                     kubectl rollout restart deployment restaurant-deployment
 
                     if [ -z "$(kops validate cluster | grep ".k8s.local is ready")" ]; then echo "PROD FAILURE"; fi
