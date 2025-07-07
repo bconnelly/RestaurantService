@@ -13,33 +13,28 @@ pipeline{
     environment{
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        TOMCAT_USER = credentials('TOMCAT_USER')
+        TOMCAT_PASS = credentials('TOMCAT_PASS')
     }
     stages{
         stage('Maven build and test'){
             steps{
-                script{
-                    def gitOutput = sh(script: '''
-                                                set -e
-                                                rm -rf RestaurantService || true
-                                                git clone ${RESTAURANT_REPO}
-                                                cd RestaurantService
-                                                GIT_SHA=$(git rev-parse --short HEAD)
-                                                MASTER_COMMIT=$(git rev-parse master)
-                                                echo "GIT_SHA=${GIT_SHA}"
-                                                echo "MASTER_COMMIT=${MASTER_COMMIT}"
-                                               ''', returnStdout: true).trim()
-                    env.GIT_SHA = (gitOutput =~ /GIT_SHA=([a-f0-9]+)/)[0][1]
-                    env.MASTER_COMMIT = (gitOutput =~ /MASTER_COMMIT=([a-f0-9]+)/)[0][1]
-
-                    echo "MASTER_COMMIT: ${env.MASTER_COMMIT}"
-                    echo "GIT_SHA: ${env.GIT_SHA}"
-
-                    env.PREV_IMAGE = sh(script: '''
-                                                docker pull bryan949/poc-restaurant:latest >> /dev/null
-                                                docker inspect --format='{{index .RepoDigests 0}}' bryan949/poc-restaurant:latest
-                                                ''', returnStdout: true).trim()
-                    echo "PREV_IMAGE: ${env.PREV_IMAGE}"
+                dir('RestaurantService'){
+                    script{
+                        git url: "${RESTAURANT_REPO}"
+                        env.GIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                        env.MASTER_COMMIT = sh(script: 'git rev-parse master', returnStdout: true).trim()
+                        env.PREV_IMAGE = sh(script: '''
+                                                    docker pull bryan949/poc-restaurant:latest >> /dev/null
+                                                    docker inspect --format='{{index .RepoDigests 0}}' bryan949/poc-restaurant:latest
+                                                    ''', returnStdout: true).trim()
+                    }
                 }
+
+                echo "MASTER_COMMIT: ${env.MASTER_COMMIT}"
+                echo "GIT_SHA: ${env.GIT_SHA}"
+                echo "PREV_IMAGE: ${env.PREV_IMAGE}"
+
                 sh '''
                     mvn verify
                    '''
@@ -48,21 +43,26 @@ pipeline{
         }
         stage('Build and push docker image'){
             steps{
-                unstash 'restaurant-repo'
-                sh '''
-                    cp /root/jenkins/restaurant-resources/tomcat-users.xml .
-                    cp /root/jenkins/restaurant-resources/context.xml .
-                    cp /root/jenkins/restaurant-resources/server.xml .
+                dir('docker-build'){
+                    unstash 'restaurant-repo'
+                    withCredentials([
+                        file(credentialsId: 'TOMCAT_SERVER_XML', variable: 'TOMCAT_SERVER_XML'),
+                        file(credentialsId: 'TOMCAT_CONTEXT_XML', variable: 'TOMCAT_CONTEXT_XML')
+                    ]) {
+                        sh '''
+                            cp "$TOMCAT_SERVER_XML" ./server.xml
+                            cp "$TOMCAT_CONTEXT_XML" ./context.xml
 
-                    docker build -t bryan949/poc-restaurant:${GIT_SHA} .
-                    docker tag bryan949/poc-restaurant:${GIT_SHA} bryan949/poc-restaurant:latest
-                    docker push bryan949/poc-restaurant:${GIT_SHA}
-                    docker push bryan949/poc-restaurant:latest
-
-                    rm tomcat-users.xml
-                    rm context.xml
-                    rm server.xml
-                '''
+                            docker build \
+                             --build-arg TOMCAT_USER=${TOMCAT_USER} \
+                             --build-arg TOMCAT_PASS=${TOMCAT_PASS} \
+                             -t bryan949/poc-restaurant:${GIT_SHA} .
+                            docker tag bryan949/poc-restaurant:${GIT_SHA} bryan949/poc-restaurant:latest
+                            docker push bryan949/poc-restaurant:${GIT_SHA}
+                            docker push bryan949/poc-restaurant:latest
+                        '''
+                    }
+                }
             }
         }
         stage('Configure cluster connection'){
@@ -74,21 +74,21 @@ pipeline{
 	            '''
             }
         }
-        stage('Deploy services to cluster - rc namespace'){
+        stage('Deploy services to cluster - rc'){
             steps{
                 sh '''
                     git clone https://github.com/bconnelly/Restaurant-k8s-components.git
 
-                    find Restaurant-k8s-components/restaurant -type f -path ./Restaurant-k8s-components/restaurant -prune -o -name *.yaml -print | while read line; do yq -i '.metadata.namespace = "rc"' $line > /dev/null; done
-                    yq -i '.metadata.namespace = "rc"' /root/jenkins/restaurant-resources/poc-secrets.yaml > /dev/null
-                    yq -i '.metadata.namespace = "rc"' Restaurant-k8s-components/poc-config.yaml > /dev/null
-                    yq -i '.metadata.namespace = "rc"' Restaurant-k8s-components/mysql-external-service.yaml > /dev/null
+                    find Restaurant-k8s-components/restaurant -name '*.yaml' -exec yq -i '.metadata.namespace = "rc"' {} \;
+                    yq -i '.metadata.namespace = "rc"' /root/jenkins/restaurant-resources/poc-secrets.yaml
+                    yq -i '.metadata.namespace = "rc"' Restaurant-k8s-components/poc-config.yaml
+                    yq -i '.metadata.namespace = "rc"' Restaurant-k8s-components/mysql-external-service.yaml
 
                     kubectl apply -f /root/jenkins/restaurant-resources/poc-secrets.yaml
                     kubectl apply -f Restaurant-k8s-components/restaurant
                     kubectl apply -f Restaurant-k8s-components/poc-config.yaml
                     kubectl apply -f Restaurant-k8s-components/mysql-external-service.yaml
-                    kubectl get deployment
+
                     kubectl rollout restart deployment restaurant-deployment
 
                     if [ -z "$(kops validate cluster | grep ".k8s.local is ready")" ]; then echo "failed to deploy to rc namespace" && exit 1; fi
@@ -98,20 +98,17 @@ pipeline{
                 stash includes: 'Restaurant-k8s-components/tests.py,Restaurant-k8s-components/tests.py', name: 'tests'
             }
         }
-        stage('sanity tests'){
+        stage('Sanity tests'){
             steps{
                 unstash 'tests'
                 sh '''
                     python Restaurant-k8s-components/tests.py ${RC_LB}
-                    exit_status=$?
-                    if [ "${exit_status}" -ne 0 ];
+                    if [ $? -ne 0 ];
                     then
-                        echo "Tests failed. Exit status: ${exit_status}"
-                        exit ${exit_status}
+                        echo "Sanity tests failed"
+                        exit 1
                     fi
                 '''
-
-
                 withCredentials([gitUsernamePassword(credentialsId: 'GITHUB_USERPASS', gitToolName: 'Default')]) {
                     sh '''
                         git checkout rc
@@ -122,20 +119,19 @@ pipeline{
                 }
             }
         }
-        stage('deploy to cluster - prod namespace'){
+        stage('Deploy to cluster - prod'){
             steps{
                 unstash 'k8s-components'
 
                 sh '''
-                    find Restaurant-k8s-components/restaurant -type f -path ./Restaurant-k8s-components/restaurant -prune -o -name *.yaml -print | while read line; do yq -i '.metadata.namespace = "prod"' $line > /dev/null; done
-                    yq -i '.metadata.namespace = "prod"' /root/jenkins/restaurant-resources/poc-secrets.yaml > /dev/null
-                    yq -i '.metadata.namespace = "prod"' Restaurant-k8s-components/poc-config.yaml > /dev/null
-                    yq -i '.metadata.namespace = "prod"' Restaurant-k8s-components/mysql-external-service.yaml > /dev/null
+                    find Restaurant-k8s-components/restaurant -name '*.yaml' -exec yq -i '.metadata.namespace = "prod"' {} \;
+                    yq -i '.metadata.namespace = "prod"' /root/jenkins/restaurant-resources/poc-secrets.yaml
+                    yq -i '.metadata.namespace = "prod"' Restaurant-k8s-components/poc-config.yaml
+                    yq -i '.metadata.namespace = "prod"' Restaurant-k8s-components/mysql-external-service.yaml
 
                     kubectl config set-context --current --namespace prod
                     kubectl apply -f /root/jenkins/restaurant-resources/poc-secrets.yaml
                     kubectl apply -f Restaurant-k8s-components/restaurant/
-                    kubectl get deployment
                     kubectl rollout restart deployment restaurant-deployment
 
                     if [ -z "$(kops validate cluster | grep ".k8s.local is ready")" ]; then echo "PROD FAILURE"; fi
@@ -155,15 +151,19 @@ pipeline{
                     git push origin master --force
                 '''
             }
-            sh '''
-                echo "Rolling back Docker image to previous digest"
-                docker pull ${PREV_IMAGE}
-                docker tag ${PREV_IMAGE} bryan949/poc-restaurant:latest
-                docker push bryan949/poc-restaurant:latest
+            stage('Revert Docker images'){
+                steps{
+                    sh '''
+                        echo "Rolling back Docker image to previous digest"
+                        docker pull ${PREV_IMAGE}
+                        docker tag ${PREV_IMAGE} bryan949/poc-restaurant:latest
+                        docker push bryan949/poc-restaurant:latest
 
-                POD=$(kubectl get pod | grep restaurant | cut -d ' ' -f 1)
-                kubectl delete pod $POD
-               '''
+                        POD=$(kubectl get pod | grep restaurant | cut -d ' ' -f 1)
+                        kubectl delete pod $POD
+                       '''
+                }
+            }
         }
         always{
             cleanWs(cleanWhenAborted: true,
@@ -174,12 +174,15 @@ pipeline{
                     cleanupMatrixParent: true,
                     deleteDirs: true,
                     disableDeferredWipeout: true)
-
-            sh '''
-                docker rmi bryan949/poc-restaurant:${GIT_SHA} || true
-                docker rmi bryan949/poc-restaurant:latest || true
-                docker image prune || true
-            '''
+            stage('Clean up Docker images'){
+                steps{
+                    sh '''
+                        docker rmi bryan949/poc-restaurant:${GIT_SHA} || true
+                        docker rmi bryan949/poc-restaurant:latest || true
+                        docker image prune || true
+                    '''
+                }
+            }
         }
     }
 }
