@@ -151,19 +151,18 @@ pipeline{
                     git push origin master --force
                 '''
             }
-            stage('Revert Docker images'){
-                steps{
-                    sh '''
-                        echo "Rolling back Docker image to previous digest"
-                        docker pull ${PREV_IMAGE}
-                        docker tag ${PREV_IMAGE} bryan949/poc-restaurant:latest
-                        docker push bryan949/poc-restaurant:latest
 
-                        POD=$(kubectl get pod | grep restaurant | cut -d ' ' -f 1)
-                        kubectl delete pod $POD
-                       '''
-                }
-            }
+            sh '''
+                echo "Rolling back Docker image to previous digest"
+                docker pull ${PREV_IMAGE}
+                docker tag ${PREV_IMAGE} bryan949/poc-restaurant:latest
+                docker push bryan949/poc-restaurant:latest
+
+                POD=$(kubectl get pod | grep restaurant | cut -d ' ' -f 1)
+                kubectl delete pod $POD
+               '''
+
+
         }
         always{
             cleanWs(cleanWhenAborted: true,
@@ -174,15 +173,12 @@ pipeline{
                     cleanupMatrixParent: true,
                     deleteDirs: true,
                     disableDeferredWipeout: true)
-            stage('Clean up Docker images'){
-                steps{
-                    sh '''
-                        docker rmi bryan949/poc-restaurant:${GIT_SHA} || true
-                        docker rmi bryan949/poc-restaurant:latest || true
-                        docker image prune || true
-                    '''
-                }
-            }
+
+            sh '''
+                docker rmi bryan949/poc-restaurant:${GIT_SHA} || true
+                docker rmi bryan949/poc-restaurant:latest || true
+                docker image prune || true
+            '''
         }
     }
 }
