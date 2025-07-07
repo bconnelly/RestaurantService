@@ -25,6 +25,6 @@ RUN chown -R tomcat: /opt/tomcat && \
 
 USER tomcat
 
-HEALTHCHECK --interval=30m --timeout=3s CMD curl --fail http://localhost:80 || exit 1
+HEALTHCHECK --interval=30m --timeout=3s CMD curl --fail http://localhost:8080 || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]
