@@ -14,8 +14,7 @@ RUN wget https://archive.apache.org/dist/tomcat/tomcat-11/v$TOMCAT_VERSION/bin/a
 RUN ln -s /opt/tomcat/apache-tomcat-$TOMCAT_VERSION /opt/tomcat/latest
 
 RUN chown -R tomcat: /opt/tomcat && \
-    chmod -R u+rwX /opt/tomcat && \
-    find /opt/tomcat -exec chmod 755 {} \;
+    chmod -R 755 /opt/tomcat
 
 COPY RestaurantService.war /opt/tomcat/latest/webapps
 COPY context.xml /opt/tomcat/latest/webapps/manager/META-INF
