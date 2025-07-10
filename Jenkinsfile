@@ -92,7 +92,17 @@ pipeline{
                     kubectl rollout restart deployment restaurant-deployment
 
                     if [ -z "$(kops validate cluster | grep ".k8s.local is ready")" ]; then echo "failed to deploy to rc namespace" && exit 1; fi
-                    sleep 3
+
+                    # wait for all service pods in rc to start running before doing tests
+                    for ((i=1; i<=10; i++)) do
+                        NOT_READY=$(kubectl get pods --no-headers | grep -vE 'Running|Completed' | wc -l )
+
+                        if [[ "$NOT_READY" -eq 0 ]]; then
+                            exit 0
+                        fi
+
+                        sleep 1
+                    done
                 '''
                 stash includes: 'Restaurant-k8s-components/restaurant/', name: 'k8s-components'
                 stash includes: 'Restaurant-k8s-components/tests.py', name: 'tests'
