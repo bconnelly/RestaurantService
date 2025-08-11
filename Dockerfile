@@ -10,7 +10,6 @@ RUN wget https://archive.apache.org/dist/tomcat/tomcat-11/v$TOMCAT_VERSION/bin/a
     chown -R tomcat: /opt/tomcat
 
 COPY RestaurantService.war /opt/tomcat/apache-tomcat-$TOMCAT_VERSION/webapps
-COPY tomcat-users.xml /opt/tomcat/apache-tomcat-$TOMCAT_VERSION/conf
 COPY context.xml /opt/tomcat/apache-tomcat-$TOMCAT_VERSION/webapps/manager/META-INF
 COPY server.xml /opt/tomcat/apache-tomcat-$TOMCAT_VERSION/conf
 
